@@ -785,6 +785,195 @@ body {
   text-align: right;
 }
 
+/* Audit Tabs */
+.audit-tabs-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 10px;
+}
+
+.btn-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-tab:hover {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-main);
+}
+
+.btn-tab.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-tab .tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+}
+
+.btn-tab:not(.active) .tab-count {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+/* Match Audit Candidates Ranking */
+.match-audit-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 14px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-xs);
+}
+
+.match-audit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.match-audit-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.candidates-ranking-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.candidate-card {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.candidate-card.is-top1 {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.candidate-card.is-active-radar {
+  border-color: var(--color-primary-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+.cand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cand-rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.cand-rank.top1-badge {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.cand-scores {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cand-sim {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-text-main);
+  font-family: var(--font-mono);
+}
+
+.cand-delta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.cand-delta.top1-delta {
+  color: #16a34a;
+}
+
+.cand-delta.diff-delta {
+  color: #dc2626;
+}
+
+.cand-diff-bars {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.btn-cand-compare {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: 5px 8px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.btn-cand-compare:hover {
+  background: #1e293b;
+  color: #ffffff;
+  border-color: #1e293b;
+}
+
+.btn-cand-compare.comparing {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
 /* Footer */
 .dashboard-footer {
   margin-top: 40px;
@@ -885,6 +1074,89 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
             f'  <td class="table-num"><strong>{wcurve.get("peak_yield", 0.0):.1f}</strong></td>\n'
             f'  <td class="table-num"><strong>{wcurve.get("total_305d", 0.0):,.0f}</strong></td>\n'
             f"</tr>"
+        )
+
+    # Generate 48 US States Reference Table initial rows
+    us_states = payload.get("us_states", {})
+    us_table_rows: list[str] = []
+    for abbrev, u_data in sorted(us_states.items(), key=lambda x: x[1].get("state_name", x[0])):
+        fips = u_data.get("fips_code", "")
+        name = u_data.get("state_name", abbrev)
+        reg = u_data.get("rufas_region", "Southeast")
+        reg_col = u_data.get("region_color", "#64748b")
+        norm = u_data.get("normalized_vector", {})
+        raw = u_data.get("raw_profile", {})
+        wadj = u_data.get("wood_adjustments", {})
+        mapped = u_data.get("mapped_ufs", [])
+
+        if mapped:
+            mapped_badges = " ".join([f'<span class="table-badge" style="background:#0f172a; color:#ffffff; font-size:0.7rem; margin:1px;">{u}</span>' for u in mapped])
+        else:
+            mapped_badges = '<span style="color:#94a3b8; font-size:0.8rem;">—</span>'
+
+        us_table_rows.append(
+            f'<tr id="us-row-{abbrev}" data-abbrev="{abbrev}">\n'
+            f'  <td class="table-num">{fips}</td>\n'
+            f'  <td><span class="table-badge" style="background:#1e293b; color:#ffffff;">{abbrev}</span></td>\n'
+            f'  <td><strong>{name}</strong></td>\n'
+            f'  <td><span class="table-badge" style="background:{reg_col}; color:#ffffff;">{reg}</span></td>\n'
+            f'  <td>{mapped_badges}</td>\n'
+            f'  <td class="table-num">{norm.get("thi_index", 0.0):.3f}</td>\n'
+            f'  <td class="table-num">{raw.get("temp_seasonality_c", 0.0):.1f}°C</td>\n'
+            f'  <td class="table-num">{norm.get("moisture_index", 0.0):.3f}</td>\n'
+            f'  <td class="table-num">{raw.get("soil_clay_pct", 0.0):.1f}%</td>\n'
+            f'  <td class="table-num">{raw.get("pawc", 0.0):.3f}</td>\n'
+            f'  <td class="table-num">{norm.get("soil_fertility_index", 0.0):.3f}</td>\n'
+            f'  <td class="table-num">{wadj.get("l", 0.0):+.2f}</td>\n'
+            f'  <td class="table-num">{wadj.get("m", 0.0):+.2f}</td>\n'
+            f'  <td class="table-num">{wadj.get("n", 0.0):+.2f}</td>\n'
+            f'</tr>'
+        )
+
+    # Initial candidate ranking cards for default UF
+    default_candidates = default_state.get("match_audit", {}).get("top_candidates", [])
+    cand_cards_html: list[str] = []
+    dim_labels = {
+        "thi_index": "THI",
+        "temp_seasonality": "Sazonalidade",
+        "moisture_index": "Aridez",
+        "soil_clay_fraction": "Argila",
+        "soil_pawc_index": "PAWC",
+        "soil_fertility_index": "Fertilidade",
+    }
+    for idx, cand in enumerate(default_candidates[:6]):
+        is_top1 = idx == 0
+        top_cls = " is-top1" if is_top1 else ""
+        active_radar_cls = " is-active-radar" if is_top1 else ""
+        rank_badge_cls = " top1-badge" if is_top1 else ""
+        delta_val = cand.get("gower_delta_from_top1", 0.0)
+        delta_str = "Top-1 Vencedor" if is_top1 else f"-{delta_val*100:.1f}% vs #1"
+        delta_cls = " top1-delta" if is_top1 else " diff-delta"
+        btn_cls = " comparing" if is_top1 else ""
+        btn_text = "Em Exibição no Radar" if is_top1 else "Comparar no Radar"
+
+        diffs = cand.get("factor_differences", {})
+        sorted_diffs = sorted(diffs.items(), key=lambda x: x[1])
+        best_dim = dim_labels.get(sorted_diffs[0][0], sorted_diffs[0][0]) if sorted_diffs else ""
+        worst_dim = dim_labels.get(sorted_diffs[-1][0], sorted_diffs[-1][0]) if sorted_diffs else ""
+
+        cand_cards_html.append(
+            f'<div class="candidate-card{top_cls}{active_radar_cls}" id="cand-card-{cand["us_abbrev"]}">\n'
+            f'  <div class="cand-header">\n'
+            f'    <span class="cand-rank{rank_badge_cls}">#{idx+1} {cand["us_name"]} ({cand["us_abbrev"]})</span>\n'
+            f'    <span class="table-badge" style="background:{cand["region_color"]}; color:#ffffff; font-size:0.68rem;">{cand["rufas_region"]}</span>\n'
+            f'  </div>\n'
+            f'  <div class="cand-scores">\n'
+            f'    <span class="cand-sim">{cand["gower_similarity"]*100:.1f}%</span>\n'
+            f'    <span class="cand-delta{delta_cls}">{delta_str}</span>\n'
+            f'  </div>\n'
+            f'  <div class="cand-diff-bars">\n'
+            f'    <div>Mais próximo: <strong>{best_dim}</strong> (Δ={sorted_diffs[0][1]:.3f})</div>\n'
+            f'    <div>Maior desvio: <strong>{worst_dim}</strong> (Δ={sorted_diffs[-1][1]:.3f})</div>\n'
+            f'  </div>\n'
+            f'  <button type="button" class="btn-cand-compare{btn_cls}" id="btn-comp-{cand["us_abbrev"]}" '
+            f'          onclick="compareCandidateRadar(\'{cand["us_abbrev"]}\')">{btn_text}</button>\n'
+            f'</div>'
         )
 
     json_payload_str = json.dumps(payload, ensure_ascii=False)
@@ -1039,6 +1311,21 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
               </div>
             </div>
 
+            <!-- Match Audit Box: Top US Candidates Ranking -->
+            <div class="match-audit-box" id="match-audit-box">
+              <div class="match-audit-header">
+                <div class="match-audit-title">
+                  <span>🎯 Auditoria do Match: Ranking de Candidatos dos EUA</span>
+                </div>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">
+                  Divergência fator a fator e alternância de comparação no radar
+                </span>
+              </div>
+              <div id="candidatesRanking" class="candidates-ranking-list">
+                {' '.join(cand_cards_html)}
+              </div>
+            </div>
+
             <!-- Wood Lactation Curve Card Section -->
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -1138,49 +1425,106 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       </section>
     </main>
 
-    <!-- Bottom View: 27-UF Responsive Audit Table -->
+    <!-- Bottom View: Responsive Audit Tables (Brazil UFs & US Reference) -->
     <section class="table-section">
       <div class="table-card">
-        <div class="table-toolbar">
-          <div>
-            <h2 class="card-title">Tabela de Auditoria das 27 UFs & Equivalências RuFaS</h2>
-            <div class="card-subtitle">Clique em qualquer linha para sincronizar o mapa e os gráficos</div>
+        <!-- Audit Tabs Header -->
+        <div class="audit-tabs-bar">
+          <button type="button" id="tab-brazil" class="btn-tab active" onclick="switchAuditTab('brazil')">
+            <span>🇧🇷 27 Estados do Brasil (IBGE)</span>
+            <span class="tab-count">{total_ufs}</span>
+          </button>
+          <button type="button" id="tab-us" class="btn-tab" onclick="switchAuditTab('us')">
+            <span>🇺🇸 Base de Referência dos 48 Estados dos EUA (FIPS)</span>
+            <span class="tab-count">{len(us_states)}</span>
+          </button>
+        </div>
+
+        <!-- Panel 1: Brazil Table -->
+        <div id="panel-brazil-table">
+          <div class="table-toolbar">
+            <div>
+              <h2 class="card-title">Tabela de Auditoria das 27 UFs & Equivalências RuFaS</h2>
+              <div class="card-subtitle">Clique em qualquer linha para sincronizar o mapa e os gráficos</div>
+            </div>
+            <div class="table-search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="tableSearchInput" class="table-search"
+                     placeholder="Filtrar por UF, estado, região ou homólogo americano..."
+                     onkeyup="filterTable(this.value)">
+            </div>
+            <div class="table-actions">
+              <button type="button" class="btn-utility" id="btnCopyCsv" onclick="copyTableAsCSV()">Copiar CSV</button>
+              <button type="button" class="btn-utility" id="btnExportJson" onclick="exportJsonData()">Exportar JSON</button>
+            </div>
           </div>
-          <div class="table-search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="tableSearchInput" class="table-search"
-                   placeholder="Filtrar por UF, estado, região ou homólogo americano..."
-                   onkeyup="filterTable(this.value)">
-          </div>
-          <div class="table-actions">
-            <button type="button" class="btn-utility" id="btnCopyCsv" onclick="copyTableAsCSV()">Copiar CSV</button>
-            <button type="button" class="btn-utility" id="btnExportJson" onclick="exportJsonData()">Exportar JSON</button>
+
+          <div class="table-scroll-wrapper">
+            <table id="auditTable" class="audit-table">
+              <thead>
+                <tr>
+                  <th data-sort-key="ibge_code" onclick="sortTable('ibge_code', true)" class="table-num">IBGE ⇕</th>
+                  <th data-sort-key="uf" onclick="sortTable('uf', false)">UF ⇕</th>
+                  <th data-sort-key="name" onclick="sortTable('name', false)">Estado Brasileiro ⇕</th>
+                  <th data-sort-key="region_br" onclick="sortTable('region_br', false)">Região BR ⇕</th>
+                  <th data-sort-key="rufas_region" onclick="sortTable('rufas_region', false)">Região RuFaS ⇕</th>
+                  <th data-sort-key="us_homologue" onclick="sortTable('us_homologue', false)">Top-1 Homólogo EUA ⇕</th>
+                  <th data-sort-key="gower_similarity" onclick="sortTable('gower_similarity', true)" class="table-num">Gower Sim. ⇕</th>
+                  <th data-sort-key="delta_l" onclick="sortTable('delta_l', true)" class="table-num">Δl ⇕</th>
+                  <th data-sort-key="delta_m" onclick="sortTable('delta_m', true)" class="table-num">Δm ⇕</th>
+                  <th data-sort-key="delta_n" onclick="sortTable('delta_n', true)" class="table-num">Δn ⇕</th>
+                  <th data-sort-key="peak_day" onclick="sortTable('peak_day', true)" class="table-num">Pico (DIM) ⇕</th>
+                  <th data-sort-key="peak_yield" onclick="sortTable('peak_yield', true)" class="table-num">Pico (kg/d) ⇕</th>
+                  <th data-sort-key="total_305d" onclick="sortTable('total_305d', true)" class="table-num">Total 305d (kg) ⇕</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableBody">
+                {' '.join(table_rows)}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="table-scroll-wrapper">
-          <table id="auditTable" class="audit-table">
-            <thead>
-              <tr>
-                <th data-sort-key="ibge_code" onclick="sortTable('ibge_code', true)" class="table-num">IBGE ⇕</th>
-                <th data-sort-key="uf" onclick="sortTable('uf', false)">UF ⇕</th>
-                <th data-sort-key="name" onclick="sortTable('name', false)">Estado Brasileiro ⇕</th>
-                <th data-sort-key="region_br" onclick="sortTable('region_br', false)">Região BR ⇕</th>
-                <th data-sort-key="rufas_region" onclick="sortTable('rufas_region', false)">Região RuFaS ⇕</th>
-                <th data-sort-key="us_homologue" onclick="sortTable('us_homologue', false)">Top-1 Homólogo EUA ⇕</th>
-                <th data-sort-key="gower_similarity" onclick="sortTable('gower_similarity', true)" class="table-num">Gower Sim. ⇕</th>
-                <th data-sort-key="delta_l" onclick="sortTable('delta_l', true)" class="table-num">Δl ⇕</th>
-                <th data-sort-key="delta_m" onclick="sortTable('delta_m', true)" class="table-num">Δm ⇕</th>
-                <th data-sort-key="delta_n" onclick="sortTable('delta_n', true)" class="table-num">Δn ⇕</th>
-                <th data-sort-key="peak_day" onclick="sortTable('peak_day', true)" class="table-num">Pico (DIM) ⇕</th>
-                <th data-sort-key="peak_yield" onclick="sortTable('peak_yield', true)" class="table-num">Pico (kg/d) ⇕</th>
-                <th data-sort-key="total_305d" onclick="sortTable('total_305d', true)" class="table-num">Total 305d (kg) ⇕</th>
-              </tr>
-            </thead>
-            <tbody id="auditTableBody">
-              {' '.join(table_rows)}
-            </tbody>
-          </table>
+        <!-- Panel 2: US States Reference Table -->
+        <div id="panel-us-table" style="display: none;">
+          <div class="table-toolbar">
+            <div>
+              <h2 class="card-title">Base de Referência Edafoclimática dos 48 Estados dos EUA</h2>
+              <div class="card-subtitle">Perfis ambientais e macrorregiões leiteiras do modelo RuFaS (FIPS)</div>
+            </div>
+            <div class="table-search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="usSearchInput" class="table-search"
+                     placeholder="Filtrar por estado, sigla, FIPS ou região RuFaS..."
+                     onkeyup="filterUsTable(this.value)">
+            </div>
+          </div>
+
+          <div class="table-scroll-wrapper">
+            <table id="usAuditTable" class="audit-table">
+              <thead>
+                <tr>
+                  <th data-us-sort-key="fips_code" onclick="sortUsTable('fips_code', true)" class="table-num">FIPS ⇕</th>
+                  <th data-us-sort-key="state_abbrev" onclick="sortUsTable('state_abbrev', false)">Sigla ⇕</th>
+                  <th data-us-sort-key="state_name" onclick="sortUsTable('state_name', false)">Estado Americano ⇕</th>
+                  <th data-us-sort-key="rufas_region" onclick="sortUsTable('rufas_region', false)">Região RuFaS ⇕</th>
+                  <th>Homólogo de UFs Brasileiras</th>
+                  <th data-us-sort-key="thi_index" onclick="sortUsTable('thi_index', true)" class="table-num">THI Norm. ⇕</th>
+                  <th data-us-sort-key="temp_seasonality" onclick="sortUsTable('temp_seasonality', true)" class="table-num">Sazon. Térmica ⇕</th>
+                  <th data-us-sort-key="moisture_index" onclick="sortUsTable('moisture_index', true)" class="table-num">Índice Hídrico ⇕</th>
+                  <th data-us-sort-key="soil_clay" onclick="sortUsTable('soil_clay', true)" class="table-num">Argila 0-30cm ⇕</th>
+                  <th data-us-sort-key="soil_pawc" onclick="sortUsTable('soil_pawc', true)" class="table-num">PAWC ⇕</th>
+                  <th data-us-sort-key="soil_fertility" onclick="sortUsTable('soil_fertility', true)" class="table-num">Fertilidade ⇕</th>
+                  <th data-us-sort-key="delta_l" onclick="sortUsTable('delta_l', true)" class="table-num">Δl ⇕</th>
+                  <th data-us-sort-key="delta_m" onclick="sortUsTable('delta_m', true)" class="table-num">Δm ⇕</th>
+                  <th data-us-sort-key="delta_n" onclick="sortUsTable('delta_n', true)" class="table-num">Δn ⇕</th>
+                </tr>
+              </thead>
+              <tbody id="usAuditTableBody">
+                {' '.join(us_table_rows)}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -1222,6 +1566,9 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       if (typeof updateRadarChart === "function") {{
         updateRadarChart(getSelectedUfData());
       }}
+      if (typeof updateMatchAudit === "function") {{
+        updateMatchAudit(getSelectedUfData());
+      }}
     }}
 
     function getSelectedUfData() {{
@@ -1257,6 +1604,9 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       }}
       if (typeof updateRadarChart === "function") {{
         updateRadarChart(ufData);
+      }}
+      if (typeof updateMatchAudit === "function") {{
+        updateMatchAudit(ufData);
       }}
     }}
 
@@ -1569,15 +1919,31 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       }}
     }}
 
-    function updateRadarChart(ufData) {{
+    function updateRadarChart(ufData, candidateAbbrev) {{
       if (!ufData) return;
       const canvas = document.getElementById("radarChart");
       if (!canvas || typeof Chart === "undefined") return;
 
       const ufColor = ufData.region_color || "#3b82f6";
       const bmatch = ufData.best_match || {{}};
+      const targetAbbrev = candidateAbbrev || bmatch.us_abbrev;
+
+      // Find candidate object (either from match_audit or us_states lookup)
+      let targetObj = (dashboardPayload && dashboardPayload.us_states && dashboardPayload.us_states[targetAbbrev])
+        ? dashboardPayload.us_states[targetAbbrev]
+        : null;
+
+      if (!targetObj && ufData.match_audit && ufData.match_audit.top_candidates) {{
+        targetObj = ufData.match_audit.top_candidates.find(c => c.us_abbrev === targetAbbrev);
+      }}
+
       const ufVec = ufData.normalized_vector || {{}};
-      const usVec = bmatch.normalized_vector || {{}};
+      const usVec = targetObj ? (targetObj.normalized_vector || {{}}) : (bmatch.normalized_vector || {{}});
+      const targetName = targetObj ? (targetObj.state_name || targetObj.us_name) : bmatch.us_state;
+      const isTop1 = targetAbbrev === bmatch.us_abbrev;
+      const targetLabel = isTop1
+        ? `Top-1 Homólogo: ${{targetName}} (${{targetAbbrev}})`
+        : `Comparando Candidato: ${{targetName}} (${{targetAbbrev}})`;
 
       const labels = [
         "THI",
@@ -1628,15 +1994,15 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
           borderWidth: 2,
         }},
         {{
-          label: `Homólogo: ${{bmatch.us_state || ''}} (${{bmatch.us_abbrev || ''}})`,
+          label: targetLabel,
           data: usScores,
-          backgroundColor: "rgba(100, 116, 139, 0.15)",
-          borderColor: "#64748b",
-          borderDash: [5, 5],
-          pointBackgroundColor: "#64748b",
+          backgroundColor: isTop1 ? "rgba(100, 116, 139, 0.15)" : "rgba(220, 38, 38, 0.15)",
+          borderColor: isTop1 ? "#64748b" : "#dc2626",
+          borderDash: isTop1 ? [5, 5] : [3, 3],
+          pointBackgroundColor: isTop1 ? "#64748b" : "#dc2626",
           pointBorderColor: "#ffffff",
           pointHoverBackgroundColor: "#ffffff",
-          pointHoverBorderColor: "#64748b",
+          pointHoverBorderColor: isTop1 ? "#64748b" : "#dc2626",
           pointRadius: 3,
           borderWidth: 2,
         }}
@@ -1699,6 +2065,183 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
           }},
         }});
       }}
+    }}
+
+    function updateMatchAudit(ufData, activeCandidateAbbrev) {{
+      if (!ufData) return;
+      const container = document.getElementById("candidatesRanking");
+      if (!container) return;
+
+      const candidates = (ufData.match_audit && ufData.match_audit.top_candidates)
+        ? ufData.match_audit.top_candidates
+        : (ufData.top_3_candidates || []);
+
+      const dimLabels = {{
+        thi_index: "THI",
+        temp_seasonality: "Sazonalidade",
+        moisture_index: "Aridez",
+        soil_clay_fraction: "Argila",
+        soil_pawc_index: "PAWC",
+        soil_fertility_index: "Fertilidade",
+      }};
+
+      const top1Abbrev = candidates[0]?.us_abbrev;
+      const comparingAbbrev = activeCandidateAbbrev || top1Abbrev;
+
+      let html = "";
+      candidates.slice(0, 6).forEach((cand, idx) => {{
+        const isTop1 = idx === 0;
+        const isComparing = cand.us_abbrev === comparingAbbrev;
+        const topCls = isTop1 ? " is-top1" : "";
+        const activeRadarCls = isComparing ? " is-active-radar" : "";
+        const rankBadgeCls = isTop1 ? " top1-badge" : "";
+        const deltaVal = cand.gower_delta_from_top1 || 0.0;
+        const deltaStr = isTop1 ? "Top-1 Vencedor" : `-${{(deltaVal * 100).toFixed(1)}}% vs #1`;
+        const deltaCls = isTop1 ? " top1-delta" : " diff-delta";
+        const btnCls = isComparing ? " comparing" : "";
+        const btnText = isComparing ? "Em Exibição no Radar" : "Comparar no Radar";
+
+        const diffs = cand.factor_differences || {{}};
+        const sortedDiffs = Object.entries(diffs).sort((a, b) => a[1] - b[1]);
+        const bestDim = sortedDiffs.length ? (dimLabels[sortedDiffs[0][0]] || sortedDiffs[0][0]) : "";
+        const worstDim = sortedDiffs.length ? (dimLabels[sortedDiffs[sortedDiffs.length - 1][0]] || sortedDiffs[sortedDiffs.length - 1][0]) : "";
+        const bestVal = sortedDiffs.length ? sortedDiffs[0][1].toFixed(3) : "0.000";
+        const worstVal = sortedDiffs.length ? sortedDiffs[sortedDiffs.length - 1][1].toFixed(3) : "0.000";
+
+        html += `
+          <div class="candidate-card${{topCls}}${{activeRadarCls}}" id="cand-card-${{cand.us_abbrev}}">
+            <div class="cand-header">
+              <span class="cand-rank${{rankBadgeCls}}">#${{idx + 1}} ${{cand.us_name}} (${{cand.us_abbrev}})</span>
+              <span class="table-badge" style="background:${{cand.region_color || '#64748b'}}; color:#ffffff; font-size:0.68rem;">${{cand.rufas_region}}</span>
+            </div>
+            <div class="cand-scores">
+              <span class="cand-sim">${{((cand.gower_similarity || 0) * 100).toFixed(1)}}%</span>
+              <span class="cand-delta${{deltaCls}}">${{deltaStr}}</span>
+            </div>
+            <div class="cand-diff-bars">
+              <div>Mais próximo: <strong>${{bestDim}}</strong> (Δ=${{bestVal}})</div>
+              <div>Maior desvio: <strong>${{worstDim}}</strong> (Δ=${{worstVal}})</div>
+            </div>
+            <button type="button" class="btn-cand-compare${{btnCls}}" id="btn-comp-${{cand.us_abbrev}}"
+                    onclick="compareCandidateRadar('${{cand.us_abbrev}}')">${{btnText}}</button>
+          </div>
+        `;
+      }});
+
+      container.innerHTML = html;
+    }}
+
+    function compareCandidateRadar(candidateAbbrev) {{
+      const ufData = getSelectedUfData();
+      if (!ufData) return;
+      updateRadarChart(ufData, candidateAbbrev);
+      updateMatchAudit(ufData, candidateAbbrev);
+    }}
+
+    function switchAuditTab(tab) {{
+      const tabBr = document.getElementById("tab-brazil");
+      const tabUs = document.getElementById("tab-us");
+      const panelBr = document.getElementById("panel-brazil-table");
+      const panelUs = document.getElementById("panel-us-table");
+
+      if (tab === "brazil") {{
+        if (tabBr) tabBr.classList.add("active");
+        if (tabUs) tabUs.classList.remove("active");
+        if (panelBr) panelBr.style.display = "block";
+        if (panelUs) panelUs.style.display = "none";
+      }} else if (tab === "us") {{
+        if (tabUs) tabUs.classList.add("active");
+        if (tabBr) tabBr.classList.remove("active");
+        if (panelUs) panelUs.style.display = "block";
+        if (panelBr) panelBr.style.display = "none";
+      }}
+    }}
+
+    function filterUsTable(query) {{
+      const q = (query || "").toLowerCase().trim();
+      const rows = document.querySelectorAll("#usAuditTableBody tr");
+      rows.forEach(row => {{
+        const text = (row.textContent || row.innerText || "").toLowerCase();
+        row.style.display = text.includes(q) ? "" : "none";
+      }});
+    }}
+
+    let usSortState = {{ column: null, ascending: true }};
+    function sortUsTable(columnKey, isNumeric) {{
+      const tbody = document.getElementById("usAuditTableBody");
+      if (!tbody || !dashboardPayload || !dashboardPayload.us_states) return;
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+
+      const isAsc = usSortState.column === columnKey ? !usSortState.ascending : true;
+      usSortState = {{ column: columnKey, ascending: isAsc }};
+
+      document.querySelectorAll("#usAuditTable thead th").forEach(th => {{
+        th.classList.remove("sort-asc", "sort-desc");
+        if (th.getAttribute("data-us-sort-key") === columnKey) {{
+          th.classList.add(isAsc ? "sort-asc" : "sort-desc");
+        }}
+      }});
+
+      rows.sort((a, b) => {{
+        const abbrevA = a.getAttribute("data-abbrev");
+        const abbrevB = b.getAttribute("data-abbrev");
+        const dataA = dashboardPayload.us_states[abbrevA];
+        const dataB = dashboardPayload.us_states[abbrevB];
+        if (!dataA || !dataB) return 0;
+
+        let valA, valB;
+        if (columnKey === "fips_code") {{
+          valA = parseInt(dataA.fips_code, 10);
+          valB = parseInt(dataB.fips_code, 10);
+        }} else if (columnKey === "state_abbrev") {{
+          valA = dataA.state_abbrev;
+          valB = dataB.state_abbrev;
+        }} else if (columnKey === "state_name") {{
+          valA = dataA.state_name;
+          valB = dataB.state_name;
+        }} else if (columnKey === "rufas_region") {{
+          valA = dataA.rufas_region;
+          valB = dataB.rufas_region;
+        }} else if (columnKey === "thi_index") {{
+          valA = dataA.normalized_vector?.thi_index || 0;
+          valB = dataB.normalized_vector?.thi_index || 0;
+        }} else if (columnKey === "temp_seasonality") {{
+          valA = dataA.raw_profile?.temp_seasonality_c || 0;
+          valB = dataB.raw_profile?.temp_seasonality_c || 0;
+        }} else if (columnKey === "moisture_index") {{
+          valA = dataA.normalized_vector?.moisture_index || 0;
+          valB = dataB.normalized_vector?.moisture_index || 0;
+        }} else if (columnKey === "soil_clay") {{
+          valA = dataA.raw_profile?.soil_clay_pct || 0;
+          valB = dataB.raw_profile?.soil_clay_pct || 0;
+        }} else if (columnKey === "soil_pawc") {{
+          valA = dataA.raw_profile?.pawc || 0;
+          valB = dataB.raw_profile?.pawc || 0;
+        }} else if (columnKey === "soil_fertility") {{
+          valA = dataA.normalized_vector?.soil_fertility_index || 0;
+          valB = dataB.normalized_vector?.soil_fertility_index || 0;
+        }} else if (columnKey === "delta_l") {{
+          valA = dataA.wood_adjustments?.l || 0;
+          valB = dataB.wood_adjustments?.l || 0;
+        }} else if (columnKey === "delta_m") {{
+          valA = dataA.wood_adjustments?.m || 0;
+          valB = dataB.wood_adjustments?.m || 0;
+        }} else if (columnKey === "delta_n") {{
+          valA = dataA.wood_adjustments?.n || 0;
+          valB = dataB.wood_adjustments?.n || 0;
+        }}
+
+        if (typeof valA === "string" && typeof valB === "string") {{
+          const cmp = valA.localeCompare(valB, "pt-BR");
+          return isAsc ? cmp : -cmp;
+        }}
+
+        if (valA < valB) return isAsc ? -1 : 1;
+        if (valA > valB) return isAsc ? 1 : -1;
+        return 0;
+      }});
+
+      rows.forEach(r => tbody.appendChild(r));
     }}
 
     function renderSvgFallbackLactation(container, ufData) {{

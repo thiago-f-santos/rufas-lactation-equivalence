@@ -220,6 +220,8 @@ def generate_dashboard_payload(
     audit_report_path: Path | str | None = None,
     edaphoclimatic_path: Path | str | None = None,
     geojson_path: Path | str | None = None,
+    us_edaphoclimatic_path: Path | str | None = None,
+    rufas_adjustments_path: Path | str | None = None,
     svg_width: float = DEFAULT_SVG_WIDTH,
     svg_height: float = DEFAULT_SVG_HEIGHT,
 ) -> dict[str, Any]:
@@ -231,15 +233,18 @@ def generate_dashboard_payload(
     - IBGE official simplified SVG polygon geometries
     - Audit equivalence rankings, Gower similarity, and US state homologues
     - Calibrated Wood's lactation curve parameters and 305-day yields
+    - Complete 48 US states reference profiles and factor-by-factor match audits
 
     Returns
     -------
     dict[str, Any]
-        Dictionary with 'summary' and 'ufs' mappings.
+        Dictionary with 'summary', 'ufs', and 'us_states' mappings.
     """
     audit_p = _resolve_project_path(audit_report_path, "output/equivalence_audit_report.json")
     edap_p = _resolve_project_path(edaphoclimatic_path, "data/brazil_ufs_edaphoclimatic.json")
     geo_p = _resolve_project_path(geojson_path, "data/brazil_ibge_ufs.geojson")
+    us_edap_p = _resolve_project_path(us_edaphoclimatic_path, "data/us_states_edaphoclimatic.json")
+    rufas_adj_p = _resolve_project_path(rufas_adjustments_path, "data/rufas_region_adjustments.json")
 
     with open(audit_p, "r", encoding="utf-8") as f:
         audit_data = json.load(f)
@@ -249,6 +254,12 @@ def generate_dashboard_payload(
 
     with open(geo_p, "r", encoding="utf-8") as f:
         geojson_data = json.load(f)
+
+    with open(us_edap_p, "r", encoding="utf-8") as f:
+        us_edap_data = json.load(f)
+
+    with open(rufas_adj_p, "r", encoding="utf-8") as f:
+        rufas_adj_data = json.load(f)
 
     geo_lookup: dict[str, dict[str, Any]] = {
         feat["properties"]["codarea"]: feat["geometry"]
@@ -261,13 +272,62 @@ def generate_dashboard_payload(
         for item in edap_data.get("profiles", [])
     }
 
+    raw_us_profiles: dict[str, dict[str, Any]] = {
+        item["abbrev"]: item
+        for item in us_edap_data.get("profiles", [])
+    }
+
+    region_adj_lookup: dict[str, dict[str, float]] = rufas_adj_data.get("region_adjustments", {})
+
+    from rufas_lactation_equivalence.biophysics import calculate_pawc
+
+    # Build 48 US States reference dictionary
+    us_states: dict[str, dict[str, Any]] = {}
+    for item in audit_data.get("us_reference_vectors", []):
+        abbrev = item["state_abbrev"]
+        name = item["state_name"]
+        fips = str(item["fips_code"])
+        region = item["rufas_region"]
+        region_color = REGION_COLORS.get(region, "#64748b")
+        norm_vec = item.get("normalized_vector", {})
+        raw_prof = dict(raw_us_profiles.get(abbrev, {}))
+        if "soil_sand_pct" in raw_prof and "soil_clay_pct" in raw_prof and "soil_soc_g_kg" in raw_prof:
+            raw_prof["pawc"] = round(
+                calculate_pawc(
+                    float(raw_prof["soil_sand_pct"]),
+                    float(raw_prof["soil_clay_pct"]),
+                    float(raw_prof["soil_soc_g_kg"]),
+                ),
+                4,
+            )
+        wood_adj = region_adj_lookup.get(region, {"l": 0.0, "m": 0.0, "n": 0.0})
+        us_states[abbrev] = {
+            "fips_code": fips,
+            "state_abbrev": abbrev,
+            "state_name": name,
+            "rufas_region": region,
+            "region_color": region_color,
+            "normalized_vector": norm_vec,
+            "raw_profile": raw_prof,
+            "wood_adjustments": wood_adj,
+            "mapped_ufs": [],
+        }
+
     us_vector_lookup: dict[str, dict[str, float]] = {
-        item["state_abbrev"]: item["normalized_vector"]
-        for item in audit_data.get("us_reference_vectors", [])
-        if "state_abbrev" in item and "normalized_vector" in item
+        abbrev: us["normalized_vector"]
+        for abbrev, us in us_states.items()
     }
 
     state_to_region = audit_data.get("brazil_state_to_region_mapping", {})
+
+    dim_keys = [
+        "thi_index",
+        "temp_seasonality",
+        "moisture_index",
+        "soil_clay_fraction",
+        "soil_pawc_index",
+        "soil_fertility_index",
+    ]
 
     ufs: dict[str, dict[str, Any]] = {}
     for item in audit_data.get("brazil_equivalences", []):
@@ -281,6 +341,10 @@ def generate_dashboard_payload(
         us_abbrev = best_match.get("us_abbrev", "")
         if "normalized_vector" not in best_match and us_abbrev in us_vector_lookup:
             best_match["normalized_vector"] = us_vector_lookup[us_abbrev]
+
+        # Register mapping in US state
+        if us_abbrev in us_states:
+            us_states[us_abbrev]["mapped_ufs"].append(uf)
 
         wood_adj = item.get("wood_adjustments", {"l": 0.0, "m": 0.0, "n": 0.0})
         wood_curve = compute_wood_curve(
@@ -298,8 +362,6 @@ def generate_dashboard_payload(
 
         raw_prof = dict(raw_lookup.get(code, {}))
         if "soil_sand_pct" in raw_prof and "soil_clay_pct" in raw_prof and "soil_soc_g_kg" in raw_prof:
-            from rufas_lactation_equivalence.biophysics import calculate_pawc
-
             raw_prof["pawc"] = round(
                 calculate_pawc(
                     float(raw_prof["soil_sand_pct"]),
@@ -310,6 +372,50 @@ def generate_dashboard_payload(
             )
 
         region_br = IBGE_MACRO_REGIONS.get(code[0] if code else "", "")
+        norm_vec_br = item.get("normalized_vector", {})
+
+        # Compute ranking and factor differences against all 48 US states
+        candidates = []
+        for cand_abbrev, cand_obj in us_states.items():
+            cand_norm = cand_obj["normalized_vector"]
+            diffs = {}
+            sum_abs = 0.0
+            sum_sq = 0.0
+            for d_k in dim_keys:
+                br_v = float(norm_vec_br.get(d_k, 0.0))
+                us_v = float(cand_norm.get(d_k, 0.0))
+                d_val = abs(br_v - us_v)
+                diffs[d_k] = round(d_val, 4)
+                sum_abs += d_val
+                sum_sq += d_val**2
+
+            gower_sim = round(1.0 - (sum_abs / 6.0), 4)
+            eucl_sim = round(1.0 - math.sqrt(sum_sq / 6.0), 4)
+            candidates.append({
+                "us_abbrev": cand_abbrev,
+                "us_name": cand_obj["state_name"],
+                "fips_code": cand_obj["fips_code"],
+                "rufas_region": cand_obj["rufas_region"],
+                "region_color": cand_obj["region_color"],
+                "gower_similarity": gower_sim,
+                "euclidean_similarity": eucl_sim,
+                "factor_differences": diffs,
+                "normalized_vector": cand_norm,
+            })
+
+        candidates.sort(
+            key=lambda c: (c["gower_similarity"], c["euclidean_similarity"]),
+            reverse=True,
+        )
+
+        top1_gower = candidates[0]["gower_similarity"]
+        for c in candidates:
+            c["gower_delta_from_top1"] = round(top1_gower - c["gower_similarity"], 4)
+
+        match_audit = {
+            "top_candidates": candidates[:6],
+            "total_candidates": len(candidates),
+        }
 
         ufs[uf] = {
             "uf": uf,
@@ -319,9 +425,10 @@ def generate_dashboard_payload(
             "rufas_region": region,
             "region_color": region_color,
             "raw_profile": raw_prof,
-            "normalized_vector": item.get("normalized_vector", {}),
+            "normalized_vector": norm_vec_br,
             "best_match": best_match,
             "top_3_candidates": item.get("top_3_candidates", []),
+            "match_audit": match_audit,
             "wood_adjustments": wood_adj,
             "wood_curve": wood_curve,
             "svg_path": svg_path,
@@ -337,6 +444,7 @@ def generate_dashboard_payload(
 
     summary: dict[str, Any] = {
         "total_ufs": len(ufs),
+        "total_us_states": len(us_states),
         "total_regions": len(distinct_regions),
         "regions": distinct_regions,
         "region_colors": REGION_COLORS,
@@ -354,6 +462,7 @@ def generate_dashboard_payload(
     return {
         "summary": summary,
         "ufs": ufs,
+        "us_states": us_states,
     }
 
 

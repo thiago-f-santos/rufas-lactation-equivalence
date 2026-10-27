@@ -244,5 +244,43 @@ def test_cli_build_dashboard_flag(tmp_path, monkeypatch):
     assert "São Paulo" in content
 
 
+def test_us_states_reference_and_match_audit():
+    from rufas_lactation_equivalence.dashboard_builder import (
+        generate_dashboard_payload,
+        render_html_dashboard,
+    )
+
+    payload = generate_dashboard_payload()
+    assert "us_states" in payload
+    assert len(payload["us_states"]) == 48
+
+    ga = payload["us_states"]["GA"]
+    assert ga["state_name"] == "Georgia"
+    assert ga["rufas_region"] == "Southeast"
+    assert "SP" in ga["mapped_ufs"]
+    assert "normalized_vector" in ga
+    assert "raw_profile" in ga
+    assert "wood_adjustments" in ga
+
+    # Check match audit candidates for SP
+    sp = payload["ufs"]["SP"]
+    assert "match_audit" in sp
+    assert len(sp["match_audit"]["top_candidates"]) >= 5
+    top1 = sp["match_audit"]["top_candidates"][0]
+    assert top1["us_abbrev"] == "GA"
+    assert "factor_differences" in top1
+    assert "gower_delta_from_top1" in top1
+
+    # Check HTML elements for US reference table, tabs and candidate comparison
+    html = render_html_dashboard()
+    assert 'id="tab-brazil"' in html
+    assert 'id="tab-us"' in html
+    assert 'id="usAuditTable"' in html
+    assert 'id="candidatesRanking"' in html
+    assert "compareCandidateRadar(" in html
+    assert "switchAuditTab(" in html
+
+
+
 
 
