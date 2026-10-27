@@ -156,4 +156,66 @@ def test_chart_logic_and_wood_parameters():
     assert "bio-clay-val" in html
 
 
+def test_audit_table_structure_and_sync():
+    from rufas_lactation_equivalence.dashboard_builder import (
+        generate_dashboard_payload,
+        render_html_dashboard,
+    )
+
+    # 1. Verify payload contains region_br
+    payload = generate_dashboard_payload()
+    assert payload["ufs"]["SP"]["region_br"] == "Sudeste"
+    assert payload["ufs"]["RS"]["region_br"] == "Sul"
+    assert payload["ufs"]["AM"]["region_br"] == "Norte"
+    assert payload["ufs"]["BA"]["region_br"] == "Nordeste"
+    assert payload["ufs"]["GO"]["region_br"] == "Centro-Oeste"
+
+    # 2. Verify HTML and table elements
+    html = render_html_dashboard()
+    assert '<table id="auditTable"' in html
+    assert 'id="auditTableBody"' in html
+    assert 'id="tableSearchInput"' in html
+    assert "filterTable(" in html
+    assert "sortTable(" in html
+    assert "data-sort-key" in html
+    assert "copyTableAsCSV" in html
+    assert "exportJsonData" in html
+
+    # 3. Check all 27 Brazilian UFs have row with click handler
+    ufs = [
+        "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA",
+        "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN",
+        "RO", "RR", "RS", "SC", "SE", "SP", "TO",
+    ]
+    for uf in ufs:
+        assert f'id="row-{uf}"' in html
+        assert f'data-uf="{uf}"' in html
+        assert f'onclick="selectState(\'{uf}\')"' in html
+
+    # 4. Check table column sort keys
+    expected_keys = [
+        "ibge_code",
+        "uf",
+        "name",
+        "region_br",
+        "rufas_region",
+        "us_homologue",
+        "gower_similarity",
+        "delta_l",
+        "delta_m",
+        "delta_n",
+        "peak_yield",
+        "total_305d",
+    ]
+    for key in expected_keys:
+        assert f'data-sort-key="{key}"' in html
+
+    # 5. Check active-row synchronization logic
+    assert "active-row" in html
+    assert 'id="row-SP" data-uf="SP" class="active-row"' in html
+    assert 'document.querySelectorAll("#auditTableBody tr").forEach' in html
+    assert 'tableRow.classList.add("active-row")' in html
+
+
+
 

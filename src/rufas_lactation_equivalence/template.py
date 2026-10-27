@@ -755,6 +755,27 @@ body {
   font-size: 0.75rem;
 }
 
+.table-badge-outline {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.audit-table thead th.sort-asc::after {
+  content: " ▲";
+  color: var(--color-primary-accent);
+}
+
+.audit-table thead th.sort-desc::after {
+  content: " ▼";
+  color: var(--color-primary-accent);
+}
+
 .table-num {
   font-family: var(--font-mono);
   text-align: right;
@@ -838,6 +859,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
     for sigla, udata in sorted(ufs.items(), key=lambda x: x[1].get("ibge_code", "")):
         code = udata.get("ibge_code", "")
         name = udata.get("name", sigla)
+        reg_br = udata.get("region_br", "")
         reg = udata.get("rufas_region", "Southeast")
         reg_col = udata.get("region_color", "#3b82f6")
         bmatch = udata.get("best_match", {})
@@ -852,6 +874,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
             f'  <td class="table-num">{code}</td>\n'
             f'  <td><span class="table-badge" style="background:#1e293b; color:#ffffff;">{sigla}</span></td>\n'
             f'  <td><strong>{name}</strong></td>\n'
+            f'  <td><span class="table-badge-outline">{reg_br}</span></td>\n'
             f'  <td><span class="table-badge" style="background:{reg_col}; color:#ffffff;">{reg}</span></td>\n'
             f'  <td>{us_str}</td>\n'
             f'  <td class="table-num"><strong>{gower * 100:.1f}%</strong></td>\n'
@@ -1130,8 +1153,8 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
                    onkeyup="filterTable(this.value)">
           </div>
           <div class="table-actions">
-            <button type="button" class="btn-utility" id="btnCopyCsv" onclick="copyTableAsCsv()">Copiar CSV</button>
-            <button type="button" class="btn-utility" id="btnExportJson" onclick="exportDataJson()">Exportar JSON</button>
+            <button type="button" class="btn-utility" id="btnCopyCsv" onclick="copyTableAsCSV()">Copiar CSV</button>
+            <button type="button" class="btn-utility" id="btnExportJson" onclick="exportJsonData()">Exportar JSON</button>
           </div>
         </div>
 
@@ -1142,6 +1165,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
                 <th data-sort-key="ibge_code" onclick="sortTable('ibge_code', true)" class="table-num">IBGE ⇕</th>
                 <th data-sort-key="uf" onclick="sortTable('uf', false)">UF ⇕</th>
                 <th data-sort-key="name" onclick="sortTable('name', false)">Estado Brasileiro ⇕</th>
+                <th data-sort-key="region_br" onclick="sortTable('region_br', false)">Região BR ⇕</th>
                 <th data-sort-key="rufas_region" onclick="sortTable('rufas_region', false)">Região RuFaS ⇕</th>
                 <th data-sort-key="us_homologue" onclick="sortTable('us_homologue', false)">Top-1 Homólogo EUA ⇕</th>
                 <th data-sort-key="gower_similarity" onclick="sortTable('gower_similarity', true)" class="table-num">Gower Sim. ⇕</th>
@@ -1754,7 +1778,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       const q = (query || "").toLowerCase().trim();
       const rows = document.querySelectorAll("#auditTableBody tr");
       rows.forEach(row => {{
-        const text = row.innerText.toLowerCase();
+        const text = (row.textContent || row.innerText || "").toLowerCase();
         row.style.display = text.includes(q) ? "" : "none";
       }});
     }}
@@ -1766,6 +1790,13 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
 
       const isAsc = sortState.column === columnKey ? !sortState.ascending : true;
       sortState = {{ column: columnKey, ascending: isAsc }};
+
+      document.querySelectorAll("#auditTable thead th").forEach(th => {{
+        th.classList.remove("sort-asc", "sort-desc");
+        if (th.getAttribute("data-sort-key") === columnKey) {{
+          th.classList.add(isAsc ? "sort-asc" : "sort-desc");
+        }}
+      }});
 
       rows.sort((a, b) => {{
         const ufA = a.getAttribute("data-uf");
@@ -1783,6 +1814,9 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
         }} else if (columnKey === "name") {{
           valA = dataA.name;
           valB = dataB.name;
+        }} else if (columnKey === "region_br") {{
+          valA = dataA.region_br || "";
+          valB = dataB.region_br || "";
         }} else if (columnKey === "rufas_region") {{
           valA = dataA.rufas_region;
           valB = dataB.rufas_region;
@@ -1812,6 +1846,11 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
           valB = dataB.wood_curve?.total_305d || 0;
         }}
 
+        if (typeof valA === "string" && typeof valB === "string") {{
+          const cmp = valA.localeCompare(valB, "pt-BR");
+          return isAsc ? cmp : -cmp;
+        }}
+
         if (valA < valB) return isAsc ? -1 : 1;
         if (valA > valB) return isAsc ? 1 : -1;
         return 0;
@@ -1820,9 +1859,9 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       rows.forEach(r => tbody.appendChild(r));
     }}
 
-    function copyTableAsCsv() {{
+    function copyTableAsCSV() {{
       if (!dashboardPayload || !dashboardPayload.ufs) return;
-      const headers = ["IBGE", "UF", "Estado", "Região_RuFaS", "Homólogo_EUA", "Sigla_EUA", "Similaridade_Gower", "Delta_L", "Delta_M", "Delta_N", "Pico_DIM", "Pico_kg_d", "Total_305d_kg"];
+      const headers = ["IBGE", "UF", "Estado", "Região_BR", "Região_RuFaS", "Homólogo_EUA", "Sigla_EUA", "Similaridade_Gower", "Delta_L", "Delta_M", "Delta_N", "Pico_DIM", "Pico_kg_d", "Total_305d_kg"];
       const lines = [headers.join(",")];
 
       Object.values(dashboardPayload.ufs).forEach(u => {{
@@ -1833,6 +1872,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
           u.ibge_code,
           u.uf,
           `"${{u.name}}"`,
+          `"${{u.region_br || ''}}"`,
           u.rufas_region,
           `"${{b.us_state || ''}}"`,
           b.us_abbrev || '',
@@ -1846,14 +1886,29 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
         ].join(","));
       }});
 
-      navigator.clipboard.writeText(lines.join("\\n")).then(() => {{
-        alert("Tabela copiada como CSV para a área de transferência!");
-      }}).catch(() => {{
-        alert("Não foi possível copiar automaticamente. Use a visualização em tela.");
-      }});
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(lines.join("\\n")).then(() => {{
+          alert("Tabela copiada como CSV para a área de transferência!");
+        }}).catch(() => {{
+          alert("Não foi possível copiar automaticamente. Use a visualização em tela.");
+        }});
+      }} else {{
+        const textarea = document.createElement("textarea");
+        textarea.value = lines.join("\\n");
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {{
+          document.execCommand("copy");
+          alert("Tabela copiada como CSV para a área de transferência!");
+        }} catch (e) {{
+          alert("Não foi possível copiar automaticamente.");
+        }}
+        document.body.removeChild(textarea);
+      }}
     }}
+    const copyTableAsCsv = copyTableAsCSV;
 
-    function exportDataJson() {{
+    function exportJsonData() {{
       if (!dashboardPayload) return;
       const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dashboardPayload, null, 2));
       const downloadAnchor = document.createElement("a");
@@ -1863,6 +1918,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       downloadAnchor.click();
       downloadAnchor.remove();
     }}
+    const exportDataJson = exportJsonData;
 
     // Auto initialize on DOM ready
     if (document.readyState === "loading") {{

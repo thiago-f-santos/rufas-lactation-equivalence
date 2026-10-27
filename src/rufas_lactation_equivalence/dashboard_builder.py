@@ -33,6 +33,14 @@ REGION_COLORS: dict[str, str] = {
     "Appalachian": "#8b5cf6",
 }
 
+IBGE_MACRO_REGIONS: dict[str, str] = {
+    "1": "Norte",
+    "2": "Nordeste",
+    "3": "Sudeste",
+    "4": "Sul",
+    "5": "Centro-Oeste",
+}
+
 
 def project_coordinates_to_svg(
     lon: float,
@@ -301,10 +309,13 @@ def generate_dashboard_payload(
                 4,
             )
 
+        region_br = IBGE_MACRO_REGIONS.get(code[0] if code else "", "")
+
         ufs[uf] = {
             "uf": uf,
             "name": state_name,
             "ibge_code": code,
+            "region_br": region_br,
             "rufas_region": region,
             "region_color": region_color,
             "raw_profile": raw_prof,
