@@ -635,214 +635,90 @@ rtk git -C /home/thiago/Projects/rufas-lactation-equivalence commit -m "feat(sim
 
 ---
 
-### Task 3: Curated Scientific Datasets for US FIPS States and 27 Brazilian IBGE UFs
+### Task 3: Scientific API Data Fetcher (NASA POWER + ISRIC SoilGrids v2.0 WCS) and Reference Coordinates
 
 **Files:**
+- Create: `/home/thiago/Projects/rufas-lactation-equivalence/data/reference_coordinates.json`
 - Create: `/home/thiago/Projects/rufas-lactation-equivalence/data/rufas_region_adjustments.json`
-- Create: `/home/thiago/Projects/rufas-lactation-equivalence/data/us_states_edaphoclimatic.json`
-- Create: `/home/thiago/Projects/rufas-lactation-equivalence/data/brazil_ufs_edaphoclimatic.json`
+- Create: `/home/thiago/Projects/rufas-lactation-equivalence/src/rufas_lactation_equivalence/fetcher.py`
+- Test: `/home/thiago/Projects/rufas-lactation-equivalence/tests/test_fetcher.py`
 - Test: `/home/thiago/Projects/rufas-lactation-equivalence/tests/test_datasets.py`
 
 **Interfaces:**
-- Consumes: Schema of `RawEdaphoclimaticProfile` and RuFaS `lactation_curve_adjustment_inputs.json`.
-- Produces: Complete, validated JSON datasets for the 48 active US FIPS states mapped in RuFaS and all 27 Brazilian IBGE UFs (`11`..`53`).
+- Consumes: `data/reference_coordinates.json` (coordinates `(lat, lon)` for 48 US FIPS states and 27 Brazilian IBGE UFs).
+- Produces:
+  - `decode_soilgrids_tiff(tiff_bytes: bytes) -> float` (pure stdlib `zlib` + `struct` GeoTIFF decoder for ISRIC WCS 2.0.1)
+  - `fetch_nasa_power_climate(lat: float, lon: float) -> dict[str, float]`
+  - `fetch_isric_soilgrids(lat: float, lon: float) -> dict[str, float]`
+  - `fetch_all_profiles(coords_file: Path, output_us_file: Path, output_br_file: Path) -> None`
+  - Atomically generated `data/us_states_edaphoclimatic.json` and `data/brazil_ufs_edaphoclimatic.json` with full API provenance metadata.
 
-- [ ] **Step 1: Write failing dataset completeness and domain validation test**
+- [ ] **Step 1: Write failing tests for GeoTIFF decoding, NASA POWER parsing, and dataset completeness**
 
-Create `/home/thiago/Projects/rufas-lactation-equivalence/tests/test_datasets.py`:
+Create `/home/thiago/Projects/rufas-lactation-equivalence/tests/test_fetcher.py`:
 
 ```python
-import json
-from pathlib import Path
+import pytest
 
-from rufas_lactation_equivalence.biophysics import normalize_profile
-from rufas_lactation_equivalence.models import RawEdaphoclimaticProfile
-
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-
-EXPECTED_BRAZIL_UF_CODES = {
-    "11", "12", "13", "14", "15", "16", "17",
-    "21", "22", "23", "24", "25", "26", "27", "28", "29",
-    "31", "32", "33", "35",
-    "41", "42", "43",
-    "50", "51", "52", "53",
-}
+from rufas_lactation_equivalence.fetcher import (
+    compute_thornthwaite_or_hargreaves_pet,
+    parse_nasa_power_response,
+    weighted_topsoil_average,
+)
 
 
-def test_datasets_completeness_and_normalization_bounds() -> None:
-    """Verify all 27 Brazilian UFs and 48 contiguous US states load and normalize to [0, 1]."""
-    regions_data = json.loads((DATA_DIR / "rufas_region_adjustments.json").read_text(encoding="utf-8"))
-    us_data = json.loads((DATA_DIR / "us_states_edaphoclimatic.json").read_text(encoding="utf-8"))
-    br_data = json.loads((DATA_DIR / "brazil_ufs_edaphoclimatic.json").read_text(encoding="utf-8"))
+def test_parse_nasa_power_response_extracts_climate_metrics() -> None:
+    """Verify extraction of T_mean, RH_mean, seasonality (max-min), precip_annual, and PET."""
+    sample_payload = {
+        "properties": {
+            "parameter": {
+                "T2M": {
+                    "JAN": 23.0, "FEB": 23.2, "MAR": 22.8, "APR": 21.5,
+                    "MAY": 19.0, "JUN": 17.5, "JUL": 17.2, "AUG": 19.5,
+                    "SEP": 21.8, "OCT": 22.9, "NOV": 22.7, "DEC": 22.8,
+                    "ANN": 21.16,
+                },
+                "RH2M": {"ANN": 70.5},
+                "PRECTOTCORR": {"ANN": 4.0},
+            }
+        }
+    }
+    parsed = parse_nasa_power_response(sample_payload, lat=-18.5)
+    assert pytest.approx(parsed["temp_mean_c"], rel=1e-3) == 21.16
+    assert pytest.approx(parsed["rh_mean_pct"], rel=1e-3) == 70.5
+    assert pytest.approx(parsed["temp_seasonality_c"], rel=1e-3) == (23.2 - 17.2)
+    assert pytest.approx(parsed["precip_annual_mm"], rel=1e-3) == 4.0 * 365.0
+    assert 800.0 <= parsed["pet_annual_mm"] <= 1800.0
 
-    adjustments = regions_data["region_adjustments"]
-    assert len(adjustments) == 14  # 13 regions + None
 
-    us_profiles = [RawEdaphoclimaticProfile.from_dict(item) for item in us_data["states"]]
-    assert len(us_profiles) == 48
-    for p in us_profiles:
-        assert p.rufas_region in adjustments
-        assert p.rufas_region != "None"
-        vec = normalize_profile(p)
-        assert all(0.0 <= v <= 1.0 for v in vec.as_tuple())
-
-    br_profiles = [RawEdaphoclimaticProfile.from_dict(item) for item in br_data["states"]]
-    assert {p.code for p in br_profiles} == EXPECTED_BRAZIL_UF_CODES
-    for p in br_profiles:
-        vec = normalize_profile(p)
-        assert all(0.0 <= v <= 1.0 for v in vec.as_tuple())
+def test_weighted_topsoil_average_0_to_30cm() -> None:
+    """Verify 0-30 cm depth-weighted average (5cm * d1 + 10cm * d2 + 15cm * d3) / 30."""
+    avg = weighted_topsoil_average(val_0_5=300.0, val_5_15=360.0, val_15_30=420.0)
+    expected = (5.0 * 300.0 + 10.0 * 360.0 + 15.0 * 420.0) / 30.0
+    assert pytest.approx(avg) == expected
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONPATH=/home/thiago/Projects/rufas-lactation-equivalence/src /home/thiago/Projects/RuFaS/.venv/bin/pytest /home/thiago/Projects/rufas-lactation-equivalence/tests/test_datasets.py -v`
-Expected: FAIL with `FileNotFoundError`
+Run: `PYTHONPATH=/home/thiago/Projects/rufas-lactation-equivalence/src /home/thiago/Projects/RuFaS/.venv/bin/pytest /home/thiago/Projects/rufas-lactation-equivalence/tests/test_fetcher.py -v`
+Expected: FAIL with `ModuleNotFoundError: No module named 'rufas_lactation_equivalence.fetcher'`
 
-- [ ] **Step 3: Create the 3 dataset files in `data/`**
+- [ ] **Step 3: Implement `fetcher.py` and `data/reference_coordinates.json`, then execute live fetch to populate `data/`**
 
-Create `/home/thiago/Projects/rufas-lactation-equivalence/data/rufas_region_adjustments.json`:
+Create `/home/thiago/Projects/rufas-lactation-equivalence/src/rufas_lactation_equivalence/fetcher.py` querying:
+- `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&format=JSON`
+- `https://maps.isric.org/mapserv?map=/map/{prop}.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID={prop}_{depth}_mean&FORMAT=image/tiff&SUBSET=X({lon_min},{lon_max})&SUBSET=Y({lat_min},{lat_max})&SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326&OUTPUTCRS=http://www.opengis.net/def/crs/EPSG/0/4326`
 
-```json
-{
-  "source": "Li, M., K. F. Reed, and V. E. Cabrera (2022). Investigating the effect of temporal, geographic, and management factors on US Holstein lactation curve parameters. Journal of Dairy Science 105(9):7525-7538.",
-  "region_adjustments": {
-    "Appalachian": {"l": -0.22, "m": -0.042, "n": -0.89},
-    "Corn Belt": {"l": 0.55, "m": -0.58, "n": -1.12},
-    "Delta": {"l": -2.56, "m": 0.59, "n": 1.47},
-    "Lake": {"l": 0.61, "m": -0.40, "n": -0.64},
-    "Mountain": {"l": -0.96, "m": 3.13, "n": 1.50},
-    "Northeast": {"l": 1.04, "m": -1.99, "n": -1.13},
-    "Northern Plains": {"l": -0.26, "m": 0.19, "n": -0.79},
-    "New York": {"l": 0.67, "m": -1.21, "n": -0.45},
-    "Pennsylvania": {"l": 1.15, "m": -0.96, "n": 0.06},
-    "Southeast": {"l": -2.00, "m": 2.59, "n": 2.60},
-    "Southern Plains": {"l": -0.51, "m": -1.02, "n": -0.93},
-    "West Coast": {"l": 1.09, "m": 0.53, "n": 0.52},
-    "Wisconsin": {"l": 1.4, "m": -0.83, "n": -0.2},
-    "None": {"l": 0.0, "m": 0.0, "n": 0.0}
-  }
-}
-```
+- [ ] **Step 4: Run fetcher & dataset validation tests**
 
-Create `/home/thiago/Projects/rufas-lactation-equivalence/data/us_states_edaphoclimatic.json` (containing all 48 contiguous US states mapped in RuFaS `state_to_region_mapping`, with agroclimatic normals from WorldClim 2 / NOAA NCEI and topsoil 0–30 cm attributes from ISRIC SoilGrids 2.0 / USDA STATSGO2):
-
-```json
-{
-  "metadata": {
-    "description": "Edaphoclimatic baseline profiles (0-30 cm topsoil and 30-year climate normals) for the 48 contiguous US states mapped to RuFaS dairy regions.",
-    "sources": [
-      "Fick & Hijmans (2017) WorldClim 2 / NOAA NCEI 1991-2020 Climate Normals",
-      "Poggio et al. (2021) ISRIC SoilGrids 2.0 / USDA NRCS STATSGO2 (0-30 cm agricultural zones)",
-      "Fischer et al. (2021) FAO/IIASA GAEZ v4 Aridity & Evapotranspiration"
-    ]
-  },
-  "states": [
-    {"code": "1", "abbrev": "AL", "name": "Alabama", "country": "USA", "rufas_region": "Southeast", "temp_mean_c": 17.8, "rh_mean_pct": 72.0, "temp_seasonality_c": 19.2, "precip_annual_mm": 1400.0, "pet_annual_mm": 1120.0, "soil_clay_pct": 26.0, "soil_sand_pct": 48.0, "soil_ph": 5.3, "soil_soc_g_kg": 14.0},
-    {"code": "4", "abbrev": "AZ", "name": "Arizona", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 19.5, "rh_mean_pct": 36.0, "temp_seasonality_c": 21.0, "precip_annual_mm": 280.0, "pet_annual_mm": 1650.0, "soil_clay_pct": 19.0, "soil_sand_pct": 52.0, "soil_ph": 7.6, "soil_soc_g_kg": 8.0},
-    {"code": "5", "abbrev": "AR", "name": "Arkansas", "country": "USA", "rufas_region": "Delta", "temp_mean_c": 16.4, "rh_mean_pct": 71.0, "temp_seasonality_c": 22.0, "precip_annual_mm": 1280.0, "pet_annual_mm": 1080.0, "soil_clay_pct": 27.0, "soil_sand_pct": 36.0, "soil_ph": 5.6, "soil_soc_g_kg": 16.0},
-    {"code": "6", "abbrev": "CA", "name": "California", "country": "USA", "rufas_region": "West Coast", "temp_mean_c": 16.8, "rh_mean_pct": 58.0, "temp_seasonality_c": 16.5, "precip_annual_mm": 480.0, "pet_annual_mm": 1320.0, "soil_clay_pct": 23.0, "soil_sand_pct": 44.0, "soil_ph": 6.8, "soil_soc_g_kg": 15.0},
-    {"code": "8", "abbrev": "CO", "name": "Colorado", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 8.8, "rh_mean_pct": 50.0, "temp_seasonality_c": 24.5, "precip_annual_mm": 410.0, "pet_annual_mm": 1150.0, "soil_clay_pct": 22.0, "soil_sand_pct": 45.0, "soil_ph": 7.2, "soil_soc_g_kg": 14.0},
-    {"code": "9", "abbrev": "CT", "name": "Connecticut", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 9.8, "rh_mean_pct": 68.0, "temp_seasonality_c": 25.0, "precip_annual_mm": 1220.0, "pet_annual_mm": 740.0, "soil_clay_pct": 14.0, "soil_sand_pct": 54.0, "soil_ph": 5.6, "soil_soc_g_kg": 28.0},
-    {"code": "10", "abbrev": "DE", "name": "Delaware", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 13.2, "rh_mean_pct": 69.0, "temp_seasonality_c": 23.5, "precip_annual_mm": 1140.0, "pet_annual_mm": 890.0, "soil_clay_pct": 17.0, "soil_sand_pct": 52.0, "soil_ph": 5.7, "soil_soc_g_kg": 18.0},
-    {"code": "12", "abbrev": "FL", "name": "Florida", "country": "USA", "rufas_region": "Southeast", "temp_mean_c": 22.1, "rh_mean_pct": 75.0, "temp_seasonality_c": 11.8, "precip_annual_mm": 1380.0, "pet_annual_mm": 1310.0, "soil_clay_pct": 15.0, "soil_sand_pct": 68.0, "soil_ph": 5.4, "soil_soc_g_kg": 16.0},
-    {"code": "13", "abbrev": "GA", "name": "Georgia", "country": "USA", "rufas_region": "Southeast", "temp_mean_c": 18.2, "rh_mean_pct": 71.0, "temp_seasonality_c": 18.5, "precip_annual_mm": 1290.0, "pet_annual_mm": 1140.0, "soil_clay_pct": 28.0, "soil_sand_pct": 49.0, "soil_ph": 5.3, "soil_soc_g_kg": 14.5},
-    {"code": "16", "abbrev": "ID", "name": "Idaho", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 8.4, "rh_mean_pct": 56.0, "temp_seasonality_c": 24.0, "precip_annual_mm": 380.0, "pet_annual_mm": 1020.0, "soil_clay_pct": 20.0, "soil_sand_pct": 42.0, "soil_ph": 7.1, "soil_soc_g_kg": 16.0},
-    {"code": "17", "abbrev": "IL", "name": "Illinois", "country": "USA", "rufas_region": "Corn Belt", "temp_mean_c": 11.2, "rh_mean_pct": 70.0, "temp_seasonality_c": 27.5, "precip_annual_mm": 1020.0, "pet_annual_mm": 860.0, "soil_clay_pct": 27.0, "soil_sand_pct": 22.0, "soil_ph": 6.4, "soil_soc_g_kg": 29.0},
-    {"code": "18", "abbrev": "IN", "name": "Indiana", "country": "USA", "rufas_region": "Corn Belt", "temp_mean_c": 11.1, "rh_mean_pct": 71.0, "temp_seasonality_c": 26.8, "precip_annual_mm": 1060.0, "pet_annual_mm": 840.0, "soil_clay_pct": 25.0, "soil_sand_pct": 26.0, "soil_ph": 6.3, "soil_soc_g_kg": 25.0},
-    {"code": "19", "abbrev": "IA", "name": "Iowa", "country": "USA", "rufas_region": "Corn Belt", "temp_mean_c": 9.3, "rh_mean_pct": 70.0, "temp_seasonality_c": 29.5, "precip_annual_mm": 890.0, "pet_annual_mm": 820.0, "soil_clay_pct": 28.0, "soil_sand_pct": 21.0, "soil_ph": 6.5, "soil_soc_g_kg": 33.0},
-    {"code": "20", "abbrev": "KS", "name": "Kansas", "country": "USA", "rufas_region": "Northern Plains", "temp_mean_c": 12.8, "rh_mean_pct": 64.0, "temp_seasonality_c": 27.8, "precip_annual_mm": 740.0, "pet_annual_mm": 1120.0, "soil_clay_pct": 27.0, "soil_sand_pct": 28.0, "soil_ph": 6.7, "soil_soc_g_kg": 21.0},
-    {"code": "21", "abbrev": "KY", "name": "Kentucky", "country": "USA", "rufas_region": "Appalachian", "temp_mean_c": 13.6, "rh_mean_pct": 70.0, "temp_seasonality_c": 23.8, "precip_annual_mm": 1230.0, "pet_annual_mm": 930.0, "soil_clay_pct": 26.0, "soil_sand_pct": 25.0, "soil_ph": 5.8, "soil_soc_g_kg": 19.0},
-    {"code": "22", "abbrev": "LA", "name": "Louisiana", "country": "USA", "rufas_region": "Delta", "temp_mean_c": 19.8, "rh_mean_pct": 76.0, "temp_seasonality_c": 16.8, "precip_annual_mm": 1520.0, "pet_annual_mm": 1180.0, "soil_clay_pct": 31.0, "soil_sand_pct": 32.0, "soil_ph": 5.6, "soil_soc_g_kg": 18.0},
-    {"code": "23", "abbrev": "ME", "name": "Maine", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 5.8, "rh_mean_pct": 71.0, "temp_seasonality_c": 27.2, "precip_annual_mm": 1120.0, "pet_annual_mm": 610.0, "soil_clay_pct": 14.0, "soil_sand_pct": 52.0, "soil_ph": 5.3, "soil_soc_g_kg": 36.0},
-    {"code": "24", "abbrev": "MD", "name": "Maryland", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 12.8, "rh_mean_pct": 68.0, "temp_seasonality_c": 24.0, "precip_annual_mm": 1110.0, "pet_annual_mm": 870.0, "soil_clay_pct": 21.0, "soil_sand_pct": 41.0, "soil_ph": 5.7, "soil_soc_g_kg": 20.0},
-    {"code": "25", "abbrev": "MA", "name": "Massachusetts", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 9.1, "rh_mean_pct": 68.0, "temp_seasonality_c": 25.5, "precip_annual_mm": 1210.0, "pet_annual_mm": 710.0, "soil_clay_pct": 12.0, "soil_sand_pct": 58.0, "soil_ph": 5.4, "soil_soc_g_kg": 31.0},
-    {"code": "26", "abbrev": "MI", "name": "Michigan", "country": "USA", "rufas_region": "Lake", "temp_mean_c": 7.6, "rh_mean_pct": 72.0, "temp_seasonality_c": 26.5, "precip_annual_mm": 850.0, "pet_annual_mm": 680.0, "soil_clay_pct": 19.0, "soil_sand_pct": 48.0, "soil_ph": 6.2, "soil_soc_g_kg": 29.0},
-    {"code": "27", "abbrev": "MN", "name": "Minnesota", "country": "USA", "rufas_region": "Lake", "temp_mean_c": 5.8, "rh_mean_pct": 70.0, "temp_seasonality_c": 31.5, "precip_annual_mm": 720.0, "pet_annual_mm": 690.0, "soil_clay_pct": 25.0, "soil_sand_pct": 33.0, "soil_ph": 6.5, "soil_soc_g_kg": 36.0},
-    {"code": "28", "abbrev": "MS", "name": "Mississippi", "country": "USA", "rufas_region": "Delta", "temp_mean_c": 18.1, "rh_mean_pct": 74.0, "temp_seasonality_c": 19.0, "precip_annual_mm": 1440.0, "pet_annual_mm": 1130.0, "soil_clay_pct": 29.0, "soil_sand_pct": 35.0, "soil_ph": 5.4, "soil_soc_g_kg": 15.5},
-    {"code": "29", "abbrev": "MO", "name": "Missouri", "country": "USA", "rufas_region": "Corn Belt", "temp_mean_c": 12.8, "rh_mean_pct": 69.0, "temp_seasonality_c": 26.2, "precip_annual_mm": 1080.0, "pet_annual_mm": 940.0, "soil_clay_pct": 28.0, "soil_sand_pct": 22.0, "soil_ph": 6.1, "soil_soc_g_kg": 23.0},
-    {"code": "30", "abbrev": "MT", "name": "Montana", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 6.2, "rh_mean_pct": 58.0, "temp_seasonality_c": 27.5, "precip_annual_mm": 390.0, "pet_annual_mm": 890.0, "soil_clay_pct": 24.0, "soil_sand_pct": 39.0, "soil_ph": 7.1, "soil_soc_g_kg": 18.0},
-    {"code": "31", "abbrev": "NE", "name": "Nebraska", "country": "USA", "rufas_region": "Northern Plains", "temp_mean_c": 9.8, "rh_mean_pct": 65.0, "temp_seasonality_c": 28.5, "precip_annual_mm": 610.0, "pet_annual_mm": 980.0, "soil_clay_pct": 24.0, "soil_sand_pct": 38.0, "soil_ph": 6.7, "soil_soc_g_kg": 22.0},
-    {"code": "32", "abbrev": "NV", "name": "Nevada", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 10.5, "rh_mean_pct": 42.0, "temp_seasonality_c": 23.5, "precip_annual_mm": 240.0, "pet_annual_mm": 1280.0, "soil_clay_pct": 18.0, "soil_sand_pct": 49.0, "soil_ph": 7.6, "soil_soc_g_kg": 9.0},
-    {"code": "33", "abbrev": "NH", "name": "New Hampshire", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 6.9, "rh_mean_pct": 69.0, "temp_seasonality_c": 26.8, "precip_annual_mm": 1150.0, "pet_annual_mm": 640.0, "soil_clay_pct": 11.0, "soil_sand_pct": 59.0, "soil_ph": 5.3, "soil_soc_g_kg": 34.0},
-    {"code": "34", "abbrev": "NJ", "name": "New Jersey", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 11.8, "rh_mean_pct": 68.0, "temp_seasonality_c": 24.5, "precip_annual_mm": 1180.0, "pet_annual_mm": 820.0, "soil_clay_pct": 17.0, "soil_sand_pct": 50.0, "soil_ph": 5.6, "soil_soc_g_kg": 22.0},
-    {"code": "35", "abbrev": "NM", "name": "New Mexico", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 13.5, "rh_mean_pct": 44.0, "temp_seasonality_c": 22.0, "precip_annual_mm": 340.0, "pet_annual_mm": 1420.0, "soil_clay_pct": 21.0, "soil_sand_pct": 48.0, "soil_ph": 7.5, "soil_soc_g_kg": 10.0},
-    {"code": "36", "abbrev": "NY", "name": "New York", "country": "USA", "rufas_region": "New York", "temp_mean_c": 8.2, "rh_mean_pct": 70.0, "temp_seasonality_c": 26.5, "precip_annual_mm": 1040.0, "pet_annual_mm": 690.0, "soil_clay_pct": 20.0, "soil_sand_pct": 38.0, "soil_ph": 5.9, "soil_soc_g_kg": 30.0},
-    {"code": "37", "abbrev": "NC", "name": "North Carolina", "country": "USA", "rufas_region": "Appalachian", "temp_mean_c": 15.6, "rh_mean_pct": 70.0, "temp_seasonality_c": 20.5, "precip_annual_mm": 1270.0, "pet_annual_mm": 1020.0, "soil_clay_pct": 25.0, "soil_sand_pct": 46.0, "soil_ph": 5.4, "soil_soc_g_kg": 17.0},
-    {"code": "38", "abbrev": "ND", "name": "North Dakota", "country": "USA", "rufas_region": "Northern Plains", "temp_mean_c": 4.9, "rh_mean_pct": 67.0, "temp_seasonality_c": 32.0, "precip_annual_mm": 460.0, "pet_annual_mm": 780.0, "soil_clay_pct": 26.0, "soil_sand_pct": 33.0, "soil_ph": 6.9, "soil_soc_g_kg": 31.0},
-    {"code": "39", "abbrev": "OH", "name": "Ohio", "country": "USA", "rufas_region": "Corn Belt", "temp_mean_c": 10.6, "rh_mean_pct": 71.0, "temp_seasonality_c": 26.0, "precip_annual_mm": 1010.0, "pet_annual_mm": 800.0, "soil_clay_pct": 26.0, "soil_sand_pct": 25.0, "soil_ph": 6.2, "soil_soc_g_kg": 24.0},
-    {"code": "40", "abbrev": "OK", "name": "Oklahoma", "country": "USA", "rufas_region": "Southern Plains", "temp_mean_c": 15.8, "rh_mean_pct": 64.0, "temp_seasonality_c": 24.5, "precip_annual_mm": 910.0, "pet_annual_mm": 1240.0, "soil_clay_pct": 25.0, "soil_sand_pct": 38.0, "soil_ph": 6.4, "soil_soc_g_kg": 17.0},
-    {"code": "41", "abbrev": "OR", "name": "Oregon", "country": "USA", "rufas_region": "West Coast", "temp_mean_c": 10.8, "rh_mean_pct": 68.0, "temp_seasonality_c": 16.0, "precip_annual_mm": 890.0, "pet_annual_mm": 840.0, "soil_clay_pct": 22.0, "soil_sand_pct": 39.0, "soil_ph": 6.1, "soil_soc_g_kg": 27.0},
-    {"code": "42", "abbrev": "PA", "name": "Pennsylvania", "country": "USA", "rufas_region": "Pennsylvania", "temp_mean_c": 9.9, "rh_mean_pct": 69.0, "temp_seasonality_c": 25.5, "precip_annual_mm": 1090.0, "pet_annual_mm": 760.0, "soil_clay_pct": 22.0, "soil_sand_pct": 33.0, "soil_ph": 5.7, "soil_soc_g_kg": 25.0},
-    {"code": "44", "abbrev": "RI", "name": "Rhode Island", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 10.2, "rh_mean_pct": 69.0, "temp_seasonality_c": 24.0, "precip_annual_mm": 1230.0, "pet_annual_mm": 730.0, "soil_clay_pct": 11.0, "soil_sand_pct": 60.0, "soil_ph": 5.4, "soil_soc_g_kg": 29.0},
-    {"code": "45", "abbrev": "SC", "name": "South Carolina", "country": "USA", "rufas_region": "Southeast", "temp_mean_c": 17.6, "rh_mean_pct": 71.0, "temp_seasonality_c": 19.2, "precip_annual_mm": 1260.0, "pet_annual_mm": 1110.0, "soil_clay_pct": 24.0, "soil_sand_pct": 53.0, "soil_ph": 5.3, "soil_soc_g_kg": 15.0},
-    {"code": "46", "abbrev": "SD", "name": "South Dakota", "country": "USA", "rufas_region": "Northern Plains", "temp_mean_c": 7.6, "rh_mean_pct": 66.0, "temp_seasonality_c": 30.8, "precip_annual_mm": 520.0, "pet_annual_mm": 890.0, "soil_clay_pct": 27.0, "soil_sand_pct": 31.0, "soil_ph": 6.8, "soil_soc_g_kg": 26.0},
-    {"code": "47", "abbrev": "TN", "name": "Tennessee", "country": "USA", "rufas_region": "Appalachian", "temp_mean_c": 14.8, "rh_mean_pct": 71.0, "temp_seasonality_c": 22.0, "precip_annual_mm": 1340.0, "pet_annual_mm": 980.0, "soil_clay_pct": 26.0, "soil_sand_pct": 28.0, "soil_ph": 5.6, "soil_soc_g_kg": 17.5},
-    {"code": "48", "abbrev": "TX", "name": "Texas", "country": "USA", "rufas_region": "Southern Plains", "temp_mean_c": 18.9, "rh_mean_pct": 63.0, "temp_seasonality_c": 20.5, "precip_annual_mm": 730.0, "pet_annual_mm": 1420.0, "soil_clay_pct": 28.0, "soil_sand_pct": 40.0, "soil_ph": 6.9, "soil_soc_g_kg": 14.0},
-    {"code": "49", "abbrev": "UT", "name": "Utah", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 9.6, "rh_mean_pct": 48.0, "temp_seasonality_c": 25.0, "precip_annual_mm": 330.0, "pet_annual_mm": 1180.0, "soil_clay_pct": 20.0, "soil_sand_pct": 46.0, "soil_ph": 7.5, "soil_soc_g_kg": 12.0},
-    {"code": "50", "abbrev": "VT", "name": "Vermont", "country": "USA", "rufas_region": "Northeast", "temp_mean_c": 6.1, "rh_mean_pct": 71.0, "temp_seasonality_c": 27.8, "precip_annual_mm": 1080.0, "pet_annual_mm": 610.0, "soil_clay_pct": 15.0, "soil_sand_pct": 48.0, "soil_ph": 5.6, "soil_soc_g_kg": 35.0},
-    {"code": "51", "abbrev": "VA", "name": "Virginia", "country": "USA", "rufas_region": "Appalachian", "temp_mean_c": 13.8, "rh_mean_pct": 69.0, "temp_seasonality_c": 22.5, "precip_annual_mm": 1140.0, "pet_annual_mm": 920.0, "soil_clay_pct": 25.0, "soil_sand_pct": 40.0, "soil_ph": 5.5, "soil_soc_g_kg": 18.5},
-    {"code": "53", "abbrev": "WA", "name": "Washington", "country": "USA", "rufas_region": "West Coast", "temp_mean_c": 10.1, "rh_mean_pct": 70.0, "temp_seasonality_c": 17.5, "precip_annual_mm": 980.0, "pet_annual_mm": 790.0, "soil_clay_pct": 18.0, "soil_sand_pct": 45.0, "soil_ph": 6.2, "soil_soc_g_kg": 26.0},
-    {"code": "54", "abbrev": "WV", "name": "West Virginia", "country": "USA", "rufas_region": "Appalachian", "temp_mean_c": 11.4, "rh_mean_pct": 71.0, "temp_seasonality_c": 23.8, "precip_annual_mm": 1160.0, "pet_annual_mm": 820.0, "soil_clay_pct": 24.0, "soil_sand_pct": 31.0, "soil_ph": 5.4, "soil_soc_g_kg": 22.0},
-    {"code": "55", "abbrev": "WI", "name": "Wisconsin", "country": "USA", "rufas_region": "Wisconsin", "temp_mean_c": 6.9, "rh_mean_pct": 71.0, "temp_seasonality_c": 29.2, "precip_annual_mm": 840.0, "pet_annual_mm": 680.0, "soil_clay_pct": 21.0, "soil_sand_pct": 41.0, "soil_ph": 6.3, "soil_soc_g_kg": 31.0},
-    {"code": "56", "abbrev": "WY", "name": "Wyoming", "country": "USA", "rufas_region": "Mountain", "temp_mean_c": 6.1, "rh_mean_pct": 53.0, "temp_seasonality_c": 26.8, "precip_annual_mm": 330.0, "pet_annual_mm": 980.0, "soil_clay_pct": 22.0, "soil_sand_pct": 44.0, "soil_ph": 7.3, "soil_soc_g_kg": 14.0}
-  ]
-}
-```
-
-Create `/home/thiago/Projects/rufas-lactation-equivalence/data/brazil_ufs_edaphoclimatic.json` (containing all 27 Brazilian UFs with IBGE 2-digit codes `11`..`53`, grounded in INMET 1991–2020 normals, WorldClim 2, and Embrapa Solos / ISRIC SoilGrids 2.0 0–30 cm topsoil profiles):
-
-```json
-{
-  "metadata": {
-    "description": "Edaphoclimatic profiles (0-30 cm topsoil and 30-year climate normals) for all 27 Brazilian Federative Units (IBGE UF codes 11..53).",
-    "sources": [
-      "INMET Normais Climatológicas do Brasil (1991-2020) & WorldClim 2 (Fick & Hijmans, 2017)",
-      "Embrapa Solos (SiBCS) & ISRIC SoilGrids 2.0 (Poggio et al., 2021) 0-30 cm agricultural/pasture zones",
-      "FAO/IIASA GAEZ v4 Evapotranspiration and Moisture Regime (Fischer et al., 2021)"
-    ]
-  },
-  "states": [
-    {"code": "11", "abbrev": "RO", "name": "Rondônia", "country": "BRA", "rufas_region": null, "temp_mean_c": 25.6, "rh_mean_pct": 81.0, "temp_seasonality_c": 2.4, "precip_annual_mm": 2150.0, "pet_annual_mm": 1420.0, "soil_clay_pct": 38.0, "soil_sand_pct": 44.0, "soil_ph": 5.1, "soil_soc_g_kg": 16.5},
-    {"code": "12", "abbrev": "AC", "name": "Acre", "country": "BRA", "rufas_region": null, "temp_mean_c": 25.2, "rh_mean_pct": 84.0, "temp_seasonality_c": 2.6, "precip_annual_mm": 2050.0, "pet_annual_mm": 1380.0, "soil_clay_pct": 36.0, "soil_sand_pct": 38.0, "soil_ph": 5.2, "soil_soc_g_kg": 17.0},
-    {"code": "13", "abbrev": "AM", "name": "Amazonas", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.7, "rh_mean_pct": 85.0, "temp_seasonality_c": 1.8, "precip_annual_mm": 2450.0, "pet_annual_mm": 1450.0, "soil_clay_pct": 42.0, "soil_sand_pct": 40.0, "soil_ph": 4.6, "soil_soc_g_kg": 19.0},
-    {"code": "14", "abbrev": "RR", "name": "Roraima", "country": "BRA", "rufas_region": null, "temp_mean_c": 27.2, "rh_mean_pct": 76.0, "temp_seasonality_c": 2.2, "precip_annual_mm": 1680.0, "pet_annual_mm": 1560.0, "soil_clay_pct": 29.0, "soil_sand_pct": 54.0, "soil_ph": 5.0, "soil_soc_g_kg": 13.0},
-    {"code": "15", "abbrev": "PA", "name": "Pará", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.4, "rh_mean_pct": 82.0, "temp_seasonality_c": 1.9, "precip_annual_mm": 2200.0, "pet_annual_mm": 1480.0, "soil_clay_pct": 37.0, "soil_sand_pct": 46.0, "soil_ph": 4.9, "soil_soc_g_kg": 16.0},
-    {"code": "16", "abbrev": "AP", "name": "Amapá", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.6, "rh_mean_pct": 83.0, "temp_seasonality_c": 1.7, "precip_annual_mm": 2500.0, "pet_annual_mm": 1460.0, "soil_clay_pct": 40.0, "soil_sand_pct": 43.0, "soil_ph": 4.8, "soil_soc_g_kg": 17.5},
-    {"code": "17", "abbrev": "TO", "name": "Tocantins", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.1, "rh_mean_pct": 68.0, "temp_seasonality_c": 3.2, "precip_annual_mm": 1620.0, "pet_annual_mm": 1650.0, "soil_clay_pct": 31.0, "soil_sand_pct": 52.0, "soil_ph": 5.2, "soil_soc_g_kg": 13.5},
-    {"code": "21", "abbrev": "MA", "name": "Maranhão", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.5, "rh_mean_pct": 75.0, "temp_seasonality_c": 2.1, "precip_annual_mm": 1580.0, "pet_annual_mm": 1620.0, "soil_clay_pct": 26.0, "soil_sand_pct": 58.0, "soil_ph": 5.3, "soil_soc_g_kg": 12.5},
-    {"code": "22", "abbrev": "PI", "name": "Piauí", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.8, "rh_mean_pct": 62.0, "temp_seasonality_c": 3.1, "precip_annual_mm": 1050.0, "pet_annual_mm": 1820.0, "soil_clay_pct": 24.0, "soil_sand_pct": 60.0, "soil_ph": 5.5, "soil_soc_g_kg": 10.5},
-    {"code": "23", "abbrev": "CE", "name": "Ceará", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.6, "rh_mean_pct": 64.0, "temp_seasonality_c": 2.5, "precip_annual_mm": 820.0, "pet_annual_mm": 1880.0, "soil_clay_pct": 23.0, "soil_sand_pct": 58.0, "soil_ph": 6.0, "soil_soc_g_kg": 10.0},
-    {"code": "24", "abbrev": "RN", "name": "Rio Grande do Norte", "country": "BRA", "rufas_region": null, "temp_mean_c": 26.5, "rh_mean_pct": 66.0, "temp_seasonality_c": 2.4, "precip_annual_mm": 780.0, "pet_annual_mm": 1850.0, "soil_clay_pct": 22.0, "soil_sand_pct": 61.0, "soil_ph": 6.1, "soil_soc_g_kg": 9.8},
-    {"code": "25", "abbrev": "PB", "name": "Paraíba", "country": "BRA", "rufas_region": null, "temp_mean_c": 25.5, "rh_mean_pct": 68.0, "temp_seasonality_c": 3.0, "precip_annual_mm": 860.0, "pet_annual_mm": 1720.0, "soil_clay_pct": 25.0, "soil_sand_pct": 56.0, "soil_ph": 5.9, "soil_soc_g_kg": 11.0},
-    {"code": "26", "abbrev": "PE", "name": "Pernambuco", "country": "BRA", "rufas_region": null, "temp_mean_c": 24.8, "rh_mean_pct": 70.0, "temp_seasonality_c": 3.4, "precip_annual_mm": 920.0, "pet_annual_mm": 1640.0, "soil_clay_pct": 27.0, "soil_sand_pct": 54.0, "soil_ph": 5.7, "soil_soc_g_kg": 12.0},
-    {"code": "27", "abbrev": "AL", "name": "Alagoas", "country": "BRA", "rufas_region": null, "temp_mean_c": 24.9, "rh_mean_pct": 74.0, "temp_seasonality_c": 3.2, "precip_annual_mm": 1180.0, "pet_annual_mm": 1520.0, "soil_clay_pct": 29.0, "soil_sand_pct": 52.0, "soil_ph": 5.5, "soil_soc_g_kg": 13.5},
-    {"code": "28", "abbrev": "SE", "name": "Sergipe", "country": "BRA", "rufas_region": null, "temp_mean_c": 25.1, "rh_mean_pct": 74.0, "temp_seasonality_c": 3.1, "precip_annual_mm": 1120.0, "pet_annual_mm": 1540.0, "soil_clay_pct": 28.0, "soil_sand_pct": 53.0, "soil_ph": 5.6, "soil_soc_g_kg": 13.0},
-    {"code": "29", "abbrev": "BA", "name": "Bahia", "country": "BRA", "rufas_region": null, "temp_mean_c": 23.8, "rh_mean_pct": 68.0, "temp_seasonality_c": 4.2, "precip_annual_mm": 1020.0, "pet_annual_mm": 1580.0, "soil_clay_pct": 32.0, "soil_sand_pct": 49.0, "soil_ph": 5.5, "soil_soc_g_kg": 13.5},
-    {"code": "31", "abbrev": "MG", "name": "Minas Gerais", "country": "BRA", "rufas_region": null, "temp_mean_c": 21.2, "rh_mean_pct": 70.0, "temp_seasonality_c": 5.8, "precip_annual_mm": 1450.0, "pet_annual_mm": 1220.0, "soil_clay_pct": 46.0, "soil_sand_pct": 34.0, "soil_ph": 5.2, "soil_soc_g_kg": 19.0},
-    {"code": "32", "abbrev": "ES", "name": "Espírito Santo", "country": "BRA", "rufas_region": null, "temp_mean_c": 23.2, "rh_mean_pct": 76.0, "temp_seasonality_c": 4.8, "precip_annual_mm": 1320.0, "pet_annual_mm": 1310.0, "soil_clay_pct": 41.0, "soil_sand_pct": 42.0, "soil_ph": 5.1, "soil_soc_g_kg": 17.5},
-    {"code": "33", "abbrev": "RJ", "name": "Rio de Janeiro", "country": "BRA", "rufas_region": null, "temp_mean_c": 22.8, "rh_mean_pct": 77.0, "temp_seasonality_c": 5.4, "precip_annual_mm": 1380.0, "pet_annual_mm": 1260.0, "soil_clay_pct": 39.0, "soil_sand_pct": 43.0, "soil_ph": 5.2, "soil_soc_g_kg": 18.0},
-    {"code": "35", "abbrev": "SP", "name": "São Paulo", "country": "BRA", "rufas_region": null, "temp_mean_c": 21.5, "rh_mean_pct": 71.0, "temp_seasonality_c": 6.4, "precip_annual_mm": 1420.0, "pet_annual_mm": 1240.0, "soil_clay_pct": 42.0, "soil_sand_pct": 39.0, "soil_ph": 5.4, "soil_soc_g_kg": 18.5},
-    {"code": "41", "abbrev": "PR", "name": "Paraná", "country": "BRA", "rufas_region": null, "temp_mean_c": 19.1, "rh_mean_pct": 75.0, "temp_seasonality_c": 8.6, "precip_annual_mm": 1680.0, "pet_annual_mm": 1080.0, "soil_clay_pct": 52.0, "soil_sand_pct": 26.0, "soil_ph": 5.4, "soil_soc_g_kg": 24.0},
-    {"code": "42", "abbrev": "SC", "name": "Santa Catarina", "country": "BRA", "rufas_region": null, "temp_mean_c": 17.8, "rh_mean_pct": 78.0, "temp_seasonality_c": 9.4, "precip_annual_mm": 1720.0, "pet_annual_mm": 990.0, "soil_clay_pct": 48.0, "soil_sand_pct": 28.0, "soil_ph": 5.2, "soil_soc_g_kg": 26.5},
-    {"code": "43", "abbrev": "RS", "name": "Rio Grande do Sul", "country": "BRA", "rufas_region": null, "temp_mean_c": 17.6, "rh_mean_pct": 76.0, "temp_seasonality_c": 10.8, "precip_annual_mm": 1620.0, "pet_annual_mm": 1020.0, "soil_clay_pct": 41.0, "soil_sand_pct": 33.0, "soil_ph": 5.4, "soil_soc_g_kg": 23.5},
-    {"code": "50", "abbrev": "MS", "name": "Mato Grosso do Sul", "country": "BRA", "rufas_region": null, "temp_mean_c": 23.6, "rh_mean_pct": 69.0, "temp_seasonality_c": 5.6, "precip_annual_mm": 1440.0, "pet_annual_mm": 1420.0, "soil_clay_pct": 35.0, "soil_sand_pct": 48.0, "soil_ph": 5.4, "soil_soc_g_kg": 16.0},
-    {"code": "51", "abbrev": "MT", "name": "Mato Grosso", "country": "BRA", "rufas_region": null, "temp_mean_c": 25.1, "rh_mean_pct": 71.0, "temp_seasonality_c": 3.8, "precip_annual_mm": 1720.0, "pet_annual_mm": 1510.0, "soil_clay_pct": 39.0, "soil_sand_pct": 44.0, "soil_ph": 5.2, "soil_soc_g_kg": 16.5},
-    {"code": "52", "abbrev": "GO", "name": "Goiás", "country": "BRA", "rufas_region": null, "temp_mean_c": 23.4, "rh_mean_pct": 66.0, "temp_seasonality_c": 4.4, "precip_annual_mm": 1520.0, "pet_annual_mm": 1460.0, "soil_clay_pct": 45.0, "soil_sand_pct": 36.0, "soil_ph": 5.3, "soil_soc_g_kg": 17.5},
-    {"code": "53", "abbrev": "DF", "name": "Distrito Federal", "country": "BRA", "rufas_region": null, "temp_mean_c": 21.4, "rh_mean_pct": 65.0, "temp_seasonality_c": 4.1, "precip_annual_mm": 1480.0, "pet_annual_mm": 1360.0, "soil_clay_pct": 52.0, "soil_sand_pct": 29.0, "soil_ph": 5.1, "soil_soc_g_kg": 20.0}
-  ]
-}
-```
-
-- [ ] **Step 4: Run dataset tests to verify they pass**
-
-Run: `PYTHONPATH=/home/thiago/Projects/rufas-lactation-equivalence/src /home/thiago/Projects/RuFaS/.venv/bin/pytest /home/thiago/Projects/rufas-lactation-equivalence/tests/test_datasets.py -v`
-Expected: PASS (1 passed)
+Run: `PYTHONPATH=/home/thiago/Projects/rufas-lactation-equivalence/src /home/thiago/Projects/RuFaS/.venv/bin/pytest /home/thiago/Projects/rufas-lactation-equivalence/tests/test_fetcher.py /home/thiago/Projects/rufas-lactation-equivalence/tests/test_datasets.py -v`
+Expected: PASS
 
 - [ ] **Step 5: Commit Task 3**
 
 ```bash
-rtk git -C /home/thiago/Projects/rufas-lactation-equivalence add data/ tests/test_datasets.py
-rtk git -C /home/thiago/Projects/rufas-lactation-equivalence commit -m "feat(data): add curated edaphoclimatic datasets for 48 US FIPS states and 27 Brazilian UFs"
+rtk git -C /home/thiago/Projects/rufas-lactation-equivalence add data/ src/rufas_lactation_equivalence/fetcher.py tests/test_fetcher.py tests/test_datasets.py
+rtk git -C /home/thiago/Projects/rufas-lactation-equivalence commit -m "feat(fetcher): add NASA POWER and ISRIC SoilGrids v2.0 WCS scientific data fetcher and datasets"
 ```
 
 ---

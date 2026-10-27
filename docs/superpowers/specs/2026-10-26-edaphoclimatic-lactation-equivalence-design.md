@@ -76,12 +76,27 @@ Para uma UF brasileira $b \in \{11, \dots, 53\}$ e um estado americano $u$ cujo 
 
 ## 3. Arquitetura do Projeto Apartado (`rufas-lactation-equivalence/`)
 
-### 3.1 Estrutura de Arquivos
+### 3.1 Coleta Automatizada de Dados Científicos (`fetcher.py`)
+Para garantir transparência total e eliminar valores manuais arbitrários, os perfis brutos de clima e solo dos 48 estados americanos e das 27 UFs brasileiras são obtidos via código a partir de coordenadas geográficas de referência (`data/reference_coordinates.json`) consultando duas APIs científicas oficiais (sem necessidade de chave de API):
+1. **Clima (NASA POWER Agroclimatology API — *Stackhouse et al., 2018*):**
+   - Endpoint: `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M,T2M_MAX,T2M_MIN,RH2M,PRECTOTCORR&community=AG`
+   - Extrai: Temperatura média anual ($T_{\text{mean}}$, °C), Umidade relativa média anual ($RH_{\text{mean}}$, %), Sazonalidade térmica ($\Delta T = \max_m(T_{2M,m}) - \min_m(T_{2M,m})$, °C), Precipitação anual acumulada ($P_{\text{anual}} = \text{PRECTOTCORR}_{\text{ANN}} \times 365$, mm/ano) e Evapotranspiração Potencial anual ($\text{PET}_{\text{anual}}$, mm/ano).
+2. **Solo 0–30 cm (ISRIC SoilGrids v2.0 OGC WCS 2.0.1 — *Poggio et al., 2021*):**
+   - Endpoint: `https://maps.isric.org/mapserv?map=/map/<prop>.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage`
+   - Propriedades consultadas na camada superficial (`0-5cm`, `5-15cm`, `15-30cm`, ponderadas por espessura $5:10:15$):
+     - `clay` ($\text{g/kg} \div 10 \to \%$ em massa)
+     - `sand` ($\text{g/kg} \div 10 \to \%$ em massa)
+     - `phh2o` ($\text{pH} \times 10 \div 10 \to \text{pH em H}_2\text{O}$)
+     - `soc` ($\text{dg/kg} \div 10 \to \text{g/kg de Carbono Orgânico}$)
+   - Os coverages GeoTIFF 4×4 pixels em torno da coordenada são decodificados diretamente via biblioteca padrão do Python (`zlib` + `struct`), sem depender de GDAL/rasterio, e persistidos atomicamente em `data/us_states_edaphoclimatic.json` e `data/brazil_ufs_edaphoclimatic.json` com metadados de proveniência.
+
+### 3.2 Estrutura de Arquivos
 ```text
 /home/thiago/Projects/rufas-lactation-equivalence/
 ├── pyproject.toml
 ├── README.md
 ├── data/
+│   ├── reference_coordinates.json
 │   ├── us_states_edaphoclimatic.json
 │   ├── brazil_ufs_edaphoclimatic.json
 │   └── rufas_region_adjustments.json
@@ -90,6 +105,7 @@ Para uma UF brasileira $b \in \{11, \dots, 53\}$ e um estado americano $u$ cujo 
 │       ├── __init__.py
 │       ├── models.py
 │       ├── biophysics.py
+│       ├── fetcher.py
 │       ├── similarity.py
 │       ├── atomic_io.py
 │       └── cli.py
@@ -98,11 +114,12 @@ Para uma UF brasileira $b \in \{11, \dots, 53\}$ e um estado americano $u$ cujo 
 │   └── equivalence_audit_report.md
 └── tests/
     ├── test_biophysics.py
+    ├── test_fetcher.py
     ├── test_similarity.py
     └── test_atomic_pipeline.py
 ```
 
-### 3.2 Garantias de Execução Atômica (`atomic_io.py`)
+### 3.3 Garantias de Execução Atômica (`atomic_io.py`)
 Toda gravação em disco (geração dos relatórios em `output/` e exportação de `brazil_state_to_region_mapping` para `RuFaS/input/data/animal/lactation_curve_adjustment_inputs.json`) utiliza escrita transacional:
 1. Serializa e valida todo o payload em memória antes de abrir qualquer descritor de arquivo.
 2. Cria um `NamedTemporaryFile` no mesmo diretório do arquivo alvo (mesmo mount point / inode table).
