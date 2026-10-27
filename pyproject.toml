@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rufas-lactation-equivalence"
+version = "1.0.0"
+description = "Scientific edaphoclimatic equivalence pipeline mapping Brazilian IBGE UFs to RuFaS US dairy lactation curve adjustments"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
