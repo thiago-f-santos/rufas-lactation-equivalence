@@ -1,0 +1,2154 @@
+{
+  "methodology": {
+    "references": [
+      "Li, M., Reed, K. F., & Cabrera, V. E. (2022). J. Dairy Sci., 105(9):7525-7538.",
+      "Bohmanova, J., Misztal, I., & Cole, J. B. (2007). J. Dairy Sci., 90(4):1947-1956.",
+      "Saxton, K. E., & Rawls, W. J. (2006). Soil Sci. Soc. Am. J., 70(5):1569-1578.",
+      "Poggio, L., et al. (2021). ISRIC SoilGrids 2.0. SOIL, 7(1):217-240.",
+      "Fick, S. E., & Hijmans, R. J. (2017). WorldClim 2. Int. J. Climatol., 37(12):4302-4315.",
+      "Gower, J. C. (1971). Biometrics, 27(4):857-871.",
+      "Ramirez-Villegas, J., et al. (2011). CCAFS Climate Analogue Working Paper No. 12."
+    ],
+    "normalization_bounds": {
+      "thi_index": [
+        45.0,
+        82.0
+      ],
+      "temp_seasonality": [
+        1.0,
+        32.0
+      ],
+      "moisture_index": [
+        0.1,
+        2.5
+      ],
+      "soil_clay_fraction": [
+        5.0,
+        75.0
+      ],
+      "soil_pawc_index": [
+        0.04,
+        0.22
+      ],
+      "soil_fertility_index": {
+        "ph_bounds": [
+          4.2,
+          7.8
+        ],
+        "soc_g_kg_bounds": [
+          5.0,
+          50.0
+        ]
+      }
+    }
+  },
+  "brazil_state_to_region_mapping": {
+    "11": "Southeast",
+    "12": "Delta",
+    "13": "Delta",
+    "14": "Southeast",
+    "15": "Southeast",
+    "16": "Delta",
+    "17": "Delta",
+    "21": "Southeast",
+    "22": "Southeast",
+    "23": "Southeast",
+    "24": "Mountain",
+    "25": "Southeast",
+    "26": "Southeast",
+    "27": "Southern Plains",
+    "28": "Mountain",
+    "29": "Southern Plains",
+    "31": "Delta",
+    "32": "Southeast",
+    "33": "Delta",
+    "35": "Southeast",
+    "41": "Appalachian",
+    "42": "Appalachian",
+    "43": "Appalachian",
+    "50": "Southeast",
+    "51": "Delta",
+    "52": "Delta",
+    "53": "Delta"
+  },
+  "brazil_equivalences": [
+    {
+      "ibge_code": "11",
+      "uf": "RO",
+      "state_name": "Rondônia",
+      "normalized_vector": {
+        "thi_index": 0.859772,
+        "temp_seasonality": 0.108065,
+        "moisture_index": 0.375089,
+        "soil_clay_fraction": 0.311429,
+        "soil_pawc_index": 0.410069,
+        "soil_fertility_index": 0.293167
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.8095,
+        "euclidean_similarity": 0.715854
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.8095,
+          "euclidean_similarity": 0.715854
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.804282,
+          "euclidean_similarity": 0.703967
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.801916,
+          "euclidean_similarity": 0.755023
+        }
+      ]
+    },
+    {
+      "ibge_code": "12",
+      "uf": "AC",
+      "state_name": "Acre",
+      "normalized_vector": {
+        "thi_index": 0.848951,
+        "temp_seasonality": 0.088065,
+        "moisture_index": 0.456117,
+        "soil_clay_fraction": 0.351714,
+        "soil_pawc_index": 0.525233,
+        "soil_fertility_index": 0.242444
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.817917,
+        "euclidean_similarity": 0.769366
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.817917,
+          "euclidean_similarity": 0.769366
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.813405,
+          "euclidean_similarity": 0.752247
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.797657,
+          "euclidean_similarity": 0.710253
+        }
+      ]
+    },
+    {
+      "ibge_code": "13",
+      "uf": "AM",
+      "state_name": "Amazonas",
+      "normalized_vector": {
+        "thi_index": 0.916637,
+        "temp_seasonality": 0.089032,
+        "moisture_index": 0.438502,
+        "soil_clay_fraction": 0.459714,
+        "soil_pawc_index": 0.624724,
+        "soil_fertility_index": 0.354111
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.798858,
+        "euclidean_similarity": 0.746196
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.798858,
+          "euclidean_similarity": 0.746196
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.77555,
+          "euclidean_similarity": 0.725285
+        },
+        {
+          "us_code": "1",
+          "us_abbrev": "AL",
+          "us_name": "Alabama",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.745392,
+          "euclidean_similarity": 0.673004
+        }
+      ]
+    },
+    {
+      "ibge_code": "14",
+      "uf": "RR",
+      "state_name": "Roraima",
+      "normalized_vector": {
+        "thi_index": 0.896589,
+        "temp_seasonality": 0.10871,
+        "moisture_index": 0.338697,
+        "soil_clay_fraction": 0.231714,
+        "soil_pawc_index": 0.281604,
+        "soil_fertility_index": 0.253556
+      },
+      "best_match": {
+        "us_code": "12",
+        "us_abbrev": "FL",
+        "us_name": "Florida",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.813149,
+        "euclidean_similarity": 0.792956
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.813149,
+          "euclidean_similarity": 0.792956
+        },
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.778527,
+          "euclidean_similarity": 0.698997
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.772937,
+          "euclidean_similarity": 0.699315
+        }
+      ]
+    },
+    {
+      "ibge_code": "15",
+      "uf": "PA",
+      "state_name": "Pará",
+      "normalized_vector": {
+        "thi_index": 0.886421,
+        "temp_seasonality": 0.095484,
+        "moisture_index": 0.425371,
+        "soil_clay_fraction": 0.395571,
+        "soil_pawc_index": 0.418688,
+        "soil_fertility_index": 0.268389
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.802297,
+        "euclidean_similarity": 0.70689
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.802297,
+          "euclidean_similarity": 0.70689
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.787041,
+          "euclidean_similarity": 0.748351
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.786575,
+          "euclidean_similarity": 0.691785
+        }
+      ]
+    },
+    {
+      "ibge_code": "16",
+      "uf": "AP",
+      "state_name": "Amapá",
+      "normalized_vector": {
+        "thi_index": 0.882711,
+        "temp_seasonality": 0.070968,
+        "moisture_index": 0.482234,
+        "soil_clay_fraction": 0.365714,
+        "soil_pawc_index": 0.483917,
+        "soil_fertility_index": 0.271944
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.809491,
+        "euclidean_similarity": 0.756124
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.809491,
+          "euclidean_similarity": 0.756124
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.801818,
+          "euclidean_similarity": 0.700142
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.796479,
+          "euclidean_similarity": 0.738297
+        }
+      ]
+    },
+    {
+      "ibge_code": "17",
+      "uf": "TO",
+      "state_name": "Tocantins",
+      "normalized_vector": {
+        "thi_index": 0.857945,
+        "temp_seasonality": 0.11871,
+        "moisture_index": 0.339288,
+        "soil_clay_fraction": 0.376143,
+        "soil_pawc_index": 0.470301,
+        "soil_fertility_index": 0.347333
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.790716,
+        "euclidean_similarity": 0.755677
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.790716,
+          "euclidean_similarity": 0.755677
+        },
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.781463,
+          "euclidean_similarity": 0.737904
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.778045,
+          "euclidean_similarity": 0.711967
+        }
+      ]
+    },
+    {
+      "ibge_code": "21",
+      "uf": "MA",
+      "state_name": "Maranhão",
+      "normalized_vector": {
+        "thi_index": 0.891243,
+        "temp_seasonality": 0.124839,
+        "moisture_index": 0.277788,
+        "soil_clay_fraction": 0.380429,
+        "soil_pawc_index": 0.435211,
+        "soil_fertility_index": 0.294111
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.777271,
+        "euclidean_similarity": 0.701818
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.777271,
+          "euclidean_similarity": 0.701818
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.776097,
+          "euclidean_similarity": 0.736312
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.770123,
+          "euclidean_similarity": 0.689804
+        }
+      ]
+    },
+    {
+      "ibge_code": "22",
+      "uf": "PI",
+      "state_name": "Piauí",
+      "normalized_vector": {
+        "thi_index": 0.8922,
+        "temp_seasonality": 0.14129,
+        "moisture_index": 0.240428,
+        "soil_clay_fraction": 0.225,
+        "soil_pawc_index": 0.333526,
+        "soil_fertility_index": 0.252278
+      },
+      "best_match": {
+        "us_code": "12",
+        "us_abbrev": "FL",
+        "us_name": "Florida",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.795185,
+        "euclidean_similarity": 0.782044
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.795185,
+          "euclidean_similarity": 0.782044
+        },
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.792993,
+          "euclidean_similarity": 0.711073
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.770042,
+          "euclidean_similarity": 0.700005
+        }
+      ]
+    },
+    {
+      "ibge_code": "23",
+      "uf": "CE",
+      "state_name": "Ceará",
+      "normalized_vector": {
+        "thi_index": 0.852832,
+        "temp_seasonality": 0.086129,
+        "moisture_index": 0.140153,
+        "soil_clay_fraction": 0.241,
+        "soil_pawc_index": 0.313465,
+        "soil_fertility_index": 0.305
+      },
+      "best_match": {
+        "us_code": "12",
+        "us_abbrev": "FL",
+        "us_name": "Florida",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.785304,
+        "euclidean_similarity": 0.777819
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.785304,
+          "euclidean_similarity": 0.777819
+        },
+        {
+          "us_code": "4",
+          "us_abbrev": "AZ",
+          "us_name": "Arizona",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.777865,
+          "euclidean_similarity": 0.704105
+        },
+        {
+          "us_code": "6",
+          "us_abbrev": "CA",
+          "us_name": "California",
+          "rufas_region": "West Coast",
+          "gower_similarity": 0.777474,
+          "euclidean_similarity": 0.714873
+        }
+      ]
+    },
+    {
+      "ibge_code": "24",
+      "uf": "RN",
+      "state_name": "Rio Grande do Norte",
+      "normalized_vector": {
+        "thi_index": 0.895354,
+        "temp_seasonality": 0.037097,
+        "moisture_index": 0.118958,
+        "soil_clay_fraction": 0.364571,
+        "soil_pawc_index": 0.400706,
+        "soil_fertility_index": 0.367444
+      },
+      "best_match": {
+        "us_code": "4",
+        "us_abbrev": "AZ",
+        "us_name": "Arizona",
+        "rufas_region": "Mountain",
+        "gower_similarity": 0.770491,
+        "euclidean_similarity": 0.686798
+      },
+      "wood_adjustments": {
+        "l": -0.96,
+        "m": 3.13,
+        "n": 1.5
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "4",
+          "us_abbrev": "AZ",
+          "us_name": "Arizona",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.770491,
+          "euclidean_similarity": 0.686798
+        },
+        {
+          "us_code": "6",
+          "us_abbrev": "CA",
+          "us_name": "California",
+          "rufas_region": "West Coast",
+          "gower_similarity": 0.7701,
+          "euclidean_similarity": 0.701225
+        },
+        {
+          "us_code": "35",
+          "us_abbrev": "NM",
+          "us_name": "New Mexico",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.761717,
+          "euclidean_similarity": 0.657042
+        }
+      ]
+    },
+    {
+      "ibge_code": "25",
+      "uf": "PB",
+      "state_name": "Paraíba",
+      "normalized_vector": {
+        "thi_index": 0.802068,
+        "temp_seasonality": 0.10871,
+        "moisture_index": 0.233017,
+        "soil_clay_fraction": 0.297857,
+        "soil_pawc_index": 0.325347,
+        "soil_fertility_index": 0.379778
+      },
+      "best_match": {
+        "us_code": "12",
+        "us_abbrev": "FL",
+        "us_name": "Florida",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.814012,
+        "euclidean_similarity": 0.795032
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.814012,
+          "euclidean_similarity": 0.795032
+        },
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.809094,
+          "euclidean_similarity": 0.729888
+        },
+        {
+          "us_code": "4",
+          "us_abbrev": "AZ",
+          "us_name": "Arizona",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.779579,
+          "euclidean_similarity": 0.716904
+        }
+      ]
+    },
+    {
+      "ibge_code": "26",
+      "uf": "PE",
+      "state_name": "Pernambuco",
+      "normalized_vector": {
+        "thi_index": 0.732553,
+        "temp_seasonality": 0.119032,
+        "moisture_index": 0.329794,
+        "soil_clay_fraction": 0.359571,
+        "soil_pawc_index": 0.320864,
+        "soil_fertility_index": 0.4155
+      },
+      "best_match": {
+        "us_code": "12",
+        "us_abbrev": "FL",
+        "us_name": "Florida",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.833426,
+        "euclidean_similarity": 0.793499
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.833426,
+          "euclidean_similarity": 0.793499
+        },
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.821295,
+          "euclidean_similarity": 0.743287
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.792557,
+          "euclidean_similarity": 0.733196
+        }
+      ]
+    },
+    {
+      "ibge_code": "27",
+      "uf": "AL",
+      "state_name": "Alagoas",
+      "normalized_vector": {
+        "thi_index": 0.799415,
+        "temp_seasonality": 0.142581,
+        "moisture_index": 0.18625,
+        "soil_clay_fraction": 0.280286,
+        "soil_pawc_index": 0.345581,
+        "soil_fertility_index": 0.447389
+      },
+      "best_match": {
+        "us_code": "48",
+        "us_abbrev": "TX",
+        "us_name": "Texas",
+        "rufas_region": "Southern Plains",
+        "gower_similarity": 0.824956,
+        "euclidean_similarity": 0.744712
+      },
+      "wood_adjustments": {
+        "l": -0.51,
+        "m": -1.02,
+        "n": -0.93
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.824956,
+          "euclidean_similarity": 0.744712
+        },
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.823129,
+          "euclidean_similarity": 0.800578
+        },
+        {
+          "us_code": "4",
+          "us_abbrev": "AZ",
+          "us_name": "Arizona",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.81103,
+          "euclidean_similarity": 0.740314
+        }
+      ]
+    },
+    {
+      "ibge_code": "28",
+      "uf": "SE",
+      "state_name": "Sergipe",
+      "normalized_vector": {
+        "thi_index": 0.821947,
+        "temp_seasonality": 0.147419,
+        "moisture_index": 0.138749,
+        "soil_clay_fraction": 0.299143,
+        "soil_pawc_index": 0.363901,
+        "soil_fertility_index": 0.403611
+      },
+      "best_match": {
+        "us_code": "4",
+        "us_abbrev": "AZ",
+        "us_name": "Arizona",
+        "rufas_region": "Mountain",
+        "gower_similarity": 0.808612,
+        "euclidean_similarity": 0.74134
+      },
+      "wood_adjustments": {
+        "l": -0.96,
+        "m": 3.13,
+        "n": 1.5
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "4",
+          "us_abbrev": "AZ",
+          "us_name": "Arizona",
+          "rufas_region": "Mountain",
+          "gower_similarity": 0.808612,
+          "euclidean_similarity": 0.74134
+        },
+        {
+          "us_code": "6",
+          "us_abbrev": "CA",
+          "us_name": "California",
+          "rufas_region": "West Coast",
+          "gower_similarity": 0.808221,
+          "euclidean_similarity": 0.756486
+        },
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.801477,
+          "euclidean_similarity": 0.735064
+        }
+      ]
+    },
+    {
+      "ibge_code": "29",
+      "uf": "BA",
+      "state_name": "Bahia",
+      "normalized_vector": {
+        "thi_index": 0.679205,
+        "temp_seasonality": 0.12129,
+        "moisture_index": 0.252296,
+        "soil_clay_fraction": 0.357143,
+        "soil_pawc_index": 0.353872,
+        "soil_fertility_index": 0.377111
+      },
+      "best_match": {
+        "us_code": "48",
+        "us_abbrev": "TX",
+        "us_name": "Texas",
+        "rufas_region": "Southern Plains",
+        "gower_similarity": 0.827426,
+        "euclidean_similarity": 0.748291
+      },
+      "wood_adjustments": {
+        "l": -0.51,
+        "m": -1.02,
+        "n": -0.93
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "48",
+          "us_abbrev": "TX",
+          "us_name": "Texas",
+          "rufas_region": "Southern Plains",
+          "gower_similarity": 0.827426,
+          "euclidean_similarity": 0.748291
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.801213,
+          "euclidean_similarity": 0.735741
+        },
+        {
+          "us_code": "12",
+          "us_abbrev": "FL",
+          "us_name": "Florida",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.8005,
+          "euclidean_similarity": 0.776072
+        }
+      ]
+    },
+    {
+      "ibge_code": "31",
+      "uf": "MG",
+      "state_name": "Minas Gerais",
+      "normalized_vector": {
+        "thi_index": 0.657591,
+        "temp_seasonality": 0.154194,
+        "moisture_index": 0.408241,
+        "soil_clay_fraction": 0.456143,
+        "soil_pawc_index": 0.438058,
+        "soil_fertility_index": 0.318889
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.827548,
+        "euclidean_similarity": 0.791486
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.827548,
+          "euclidean_similarity": 0.791486
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.825625,
+          "euclidean_similarity": 0.765396
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.824143,
+          "euclidean_similarity": 0.750307
+        }
+      ]
+    },
+    {
+      "ibge_code": "32",
+      "uf": "ES",
+      "state_name": "Espírito Santo",
+      "normalized_vector": {
+        "thi_index": 0.639979,
+        "temp_seasonality": 0.129355,
+        "moisture_index": 0.462865,
+        "soil_clay_fraction": 0.368286,
+        "soil_pawc_index": 0.398292,
+        "soil_fertility_index": 0.402778
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.840813,
+        "euclidean_similarity": 0.762739
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.840813,
+          "euclidean_similarity": 0.762739
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.835366,
+          "euclidean_similarity": 0.751561
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.829481,
+          "euclidean_similarity": 0.791263
+        }
+      ]
+    },
+    {
+      "ibge_code": "33",
+      "uf": "RJ",
+      "state_name": "Rio de Janeiro",
+      "normalized_vector": {
+        "thi_index": 0.605188,
+        "temp_seasonality": 0.164839,
+        "moisture_index": 0.555174,
+        "soil_clay_fraction": 0.492286,
+        "soil_pawc_index": 0.426475,
+        "soil_fertility_index": 0.321167
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.854211,
+        "euclidean_similarity": 0.802294
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.854211,
+          "euclidean_similarity": 0.802294
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.840505,
+          "euclidean_similarity": 0.774829
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.833771,
+          "euclidean_similarity": 0.756984
+        }
+      ]
+    },
+    {
+      "ibge_code": "35",
+      "uf": "SP",
+      "state_name": "São Paulo",
+      "normalized_vector": {
+        "thi_index": 0.665165,
+        "temp_seasonality": 0.16129,
+        "moisture_index": 0.444535,
+        "soil_clay_fraction": 0.516857,
+        "soil_pawc_index": 0.428479,
+        "soil_fertility_index": 0.299389
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.826322,
+        "euclidean_similarity": 0.76262
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.826322,
+          "euclidean_similarity": 0.76262
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.824663,
+          "euclidean_similarity": 0.786123
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.820933,
+          "euclidean_similarity": 0.744692
+        }
+      ]
+    },
+    {
+      "ibge_code": "41",
+      "uf": "PR",
+      "state_name": "Paraná",
+      "normalized_vector": {
+        "thi_index": 0.518001,
+        "temp_seasonality": 0.22871,
+        "moisture_index": 0.681076,
+        "soil_clay_fraction": 0.555714,
+        "soil_pawc_index": 0.498172,
+        "soil_fertility_index": 0.383056
+      },
+      "best_match": {
+        "us_code": "47",
+        "us_abbrev": "TN",
+        "us_name": "Tennessee",
+        "rufas_region": "Appalachian",
+        "gower_similarity": 0.841847,
+        "euclidean_similarity": 0.783019
+      },
+      "wood_adjustments": {
+        "l": -0.22,
+        "m": -0.042,
+        "n": -0.89
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "47",
+          "us_abbrev": "TN",
+          "us_name": "Tennessee",
+          "rufas_region": "Appalachian",
+          "gower_similarity": 0.841847,
+          "euclidean_similarity": 0.783019
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.840215,
+          "euclidean_similarity": 0.809512
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.839278,
+          "euclidean_similarity": 0.802267
+        }
+      ]
+    },
+    {
+      "ibge_code": "42",
+      "uf": "SC",
+      "state_name": "Santa Catarina",
+      "normalized_vector": {
+        "thi_index": 0.488286,
+        "temp_seasonality": 0.258065,
+        "moisture_index": 0.842797,
+        "soil_clay_fraction": 0.635286,
+        "soil_pawc_index": 0.511014,
+        "soil_fertility_index": 0.412333
+      },
+      "best_match": {
+        "us_code": "47",
+        "us_abbrev": "TN",
+        "us_name": "Tennessee",
+        "rufas_region": "Appalachian",
+        "gower_similarity": 0.808737,
+        "euclidean_similarity": 0.769457
+      },
+      "wood_adjustments": {
+        "l": -0.22,
+        "m": -0.042,
+        "n": -0.89
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "47",
+          "us_abbrev": "TN",
+          "us_name": "Tennessee",
+          "rufas_region": "Appalachian",
+          "gower_similarity": 0.808737,
+          "euclidean_similarity": 0.769457
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.797201,
+          "euclidean_similarity": 0.770821
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.796263,
+          "euclidean_similarity": 0.768368
+        }
+      ]
+    },
+    {
+      "ibge_code": "43",
+      "uf": "RS",
+      "state_name": "Rio Grande do Sul",
+      "normalized_vector": {
+        "thi_index": 0.501761,
+        "temp_seasonality": 0.300645,
+        "moisture_index": 0.809886,
+        "soil_clay_fraction": 0.645143,
+        "soil_pawc_index": 0.50389,
+        "soil_fertility_index": 0.377667
+      },
+      "best_match": {
+        "us_code": "47",
+        "us_abbrev": "TN",
+        "us_name": "Tennessee",
+        "rufas_region": "Appalachian",
+        "gower_similarity": 0.822021,
+        "euclidean_similarity": 0.784921
+      },
+      "wood_adjustments": {
+        "l": -0.22,
+        "m": -0.042,
+        "n": -0.89
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "47",
+          "us_abbrev": "TN",
+          "us_name": "Tennessee",
+          "rufas_region": "Appalachian",
+          "gower_similarity": 0.822021,
+          "euclidean_similarity": 0.784921
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.814976,
+          "euclidean_similarity": 0.785217
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.814038,
+          "euclidean_similarity": 0.783882
+        }
+      ]
+    },
+    {
+      "ibge_code": "50",
+      "uf": "MS",
+      "state_name": "Mato Grosso do Sul",
+      "normalized_vector": {
+        "thi_index": 0.776152,
+        "temp_seasonality": 0.170645,
+        "moisture_index": 0.317492,
+        "soil_clay_fraction": 0.427429,
+        "soil_pawc_index": 0.418437,
+        "soil_fertility_index": 0.302333
+      },
+      "best_match": {
+        "us_code": "13",
+        "us_abbrev": "GA",
+        "us_name": "Georgia",
+        "rufas_region": "Southeast",
+        "gower_similarity": 0.804297,
+        "euclidean_similarity": 0.744764
+      },
+      "wood_adjustments": {
+        "l": -2.0,
+        "m": 2.59,
+        "n": 2.6
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.804297,
+          "euclidean_similarity": 0.744764
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.799889,
+          "euclidean_similarity": 0.730908
+        },
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.79968,
+          "euclidean_similarity": 0.769633
+        }
+      ]
+    },
+    {
+      "ibge_code": "51",
+      "uf": "MT",
+      "state_name": "Mato Grosso",
+      "normalized_vector": {
+        "thi_index": 0.812317,
+        "temp_seasonality": 0.127742,
+        "moisture_index": 0.372314,
+        "soil_clay_fraction": 0.454714,
+        "soil_pawc_index": 0.436076,
+        "soil_fertility_index": 0.332556
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.788994,
+        "euclidean_similarity": 0.760194
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.788994,
+          "euclidean_similarity": 0.760194
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.787731,
+          "euclidean_similarity": 0.725465
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.78625,
+          "euclidean_similarity": 0.711244
+        }
+      ]
+    },
+    {
+      "ibge_code": "52",
+      "uf": "GO",
+      "state_name": "Goiás",
+      "normalized_vector": {
+        "thi_index": 0.727377,
+        "temp_seasonality": 0.162903,
+        "moisture_index": 0.357776,
+        "soil_clay_fraction": 0.484571,
+        "soil_pawc_index": 0.441,
+        "soil_fertility_index": 0.307056
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.806682,
+        "euclidean_similarity": 0.776066
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.806682,
+          "euclidean_similarity": 0.776066
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.803778,
+          "euclidean_similarity": 0.75018
+        },
+        {
+          "us_code": "45",
+          "us_abbrev": "SC",
+          "us_name": "South Carolina",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.800945,
+          "euclidean_similarity": 0.734732
+        }
+      ]
+    },
+    {
+      "ibge_code": "53",
+      "uf": "DF",
+      "state_name": "Distrito Federal",
+      "normalized_vector": {
+        "thi_index": 0.657736,
+        "temp_seasonality": 0.162581,
+        "moisture_index": 0.43821,
+        "soil_clay_fraction": 0.606286,
+        "soil_pawc_index": 0.498096,
+        "soil_fertility_index": 0.287556
+      },
+      "best_match": {
+        "us_code": "22",
+        "us_abbrev": "LA",
+        "us_name": "Louisiana",
+        "rufas_region": "Delta",
+        "gower_similarity": 0.819788,
+        "euclidean_similarity": 0.773947
+      },
+      "wood_adjustments": {
+        "l": -2.56,
+        "m": 0.59,
+        "n": 1.47
+      },
+      "top_3_candidates": [
+        {
+          "us_code": "22",
+          "us_abbrev": "LA",
+          "us_name": "Louisiana",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.819788,
+          "euclidean_similarity": 0.773947
+        },
+        {
+          "us_code": "13",
+          "us_abbrev": "GA",
+          "us_name": "Georgia",
+          "rufas_region": "Southeast",
+          "gower_similarity": 0.802185,
+          "euclidean_similarity": 0.745516
+        },
+        {
+          "us_code": "28",
+          "us_abbrev": "MS",
+          "us_name": "Mississippi",
+          "rufas_region": "Delta",
+          "gower_similarity": 0.801572,
+          "euclidean_similarity": 0.762194
+        }
+      ]
+    }
+  ],
+  "us_reference_vectors": [
+    {
+      "fips_code": "1",
+      "state_abbrev": "AL",
+      "state_name": "Alabama",
+      "rufas_region": "Southeast",
+      "normalized_vector": {
+        "thi_index": 0.436577,
+        "temp_seasonality": 0.68,
+        "moisture_index": 0.610758,
+        "soil_clay_fraction": 0.307714,
+        "soil_pawc_index": 0.571251,
+        "soil_fertility_index": 0.275222
+      }
+    },
+    {
+      "fips_code": "4",
+      "state_abbrev": "AZ",
+      "state_name": "Arizona",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.602508,
+        "temp_seasonality": 0.712581,
+        "moisture_index": 0.031841,
+        "soil_clay_fraction": 0.230143,
+        "soil_pawc_index": 0.45333,
+        "soil_fertility_index": 0.502
+      }
+    },
+    {
+      "fips_code": "5",
+      "state_abbrev": "AR",
+      "state_name": "Arkansas",
+      "rufas_region": "Delta",
+      "normalized_vector": {
+        "thi_index": 0.352426,
+        "temp_seasonality": 0.784516,
+        "moisture_index": 0.557817,
+        "soil_clay_fraction": 0.218,
+        "soil_pawc_index": 0.676624,
+        "soil_fertility_index": 0.329611
+      }
+    },
+    {
+      "fips_code": "6",
+      "state_abbrev": "CA",
+      "state_name": "California",
+      "rufas_region": "West Coast",
+      "normalized_vector": {
+        "thi_index": 0.523006,
+        "temp_seasonality": 0.617742,
+        "moisture_index": 0.102261,
+        "soil_clay_fraction": 0.237,
+        "soil_pawc_index": 0.500235,
+        "soil_fertility_index": 0.550056
+      }
+    },
+    {
+      "fips_code": "8",
+      "state_abbrev": "CO",
+      "state_name": "Colorado",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.193453,
+        "temp_seasonality": 0.786452,
+        "moisture_index": 0.246579,
+        "soil_clay_fraction": 0.317143,
+        "soil_pawc_index": 0.440063,
+        "soil_fertility_index": 0.561667
+      }
+    },
+    {
+      "fips_code": "9",
+      "state_abbrev": "CT",
+      "state_name": "Connecticut",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.099659,
+        "temp_seasonality": 0.849355,
+        "moisture_index": 0.785709,
+        "soil_clay_fraction": 0.085286,
+        "soil_pawc_index": 0.363916,
+        "soil_fertility_index": 0.619444
+      }
+    },
+    {
+      "fips_code": "10",
+      "state_abbrev": "DE",
+      "state_name": "Delaware",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.307451,
+        "temp_seasonality": 0.772903,
+        "moisture_index": 0.578559,
+        "soil_clay_fraction": 0.238571,
+        "soil_pawc_index": 0.557391,
+        "soil_fertility_index": 0.507
+      }
+    },
+    {
+      "fips_code": "12",
+      "state_abbrev": "FL",
+      "state_name": "Florida",
+      "rufas_region": "Southeast",
+      "normalized_vector": {
+        "thi_index": 0.751864,
+        "temp_seasonality": 0.304516,
+        "moisture_index": 0.356445,
+        "soil_clay_fraction": 0.022429,
+        "soil_pawc_index": 0.022118,
+        "soil_fertility_index": 0.547611
+      }
+    },
+    {
+      "fips_code": "13",
+      "state_abbrev": "GA",
+      "state_name": "Georgia",
+      "rufas_region": "Southeast",
+      "normalized_vector": {
+        "thi_index": 0.460172,
+        "temp_seasonality": 0.660968,
+        "moisture_index": 0.508243,
+        "soil_clay_fraction": 0.318286,
+        "soil_pawc_index": 0.384358,
+        "soil_fertility_index": 0.268389
+      }
+    },
+    {
+      "fips_code": "16",
+      "state_abbrev": "ID",
+      "state_name": "Idaho",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.187371,
+        "temp_seasonality": 0.87,
+        "moisture_index": 0.198921,
+        "soil_clay_fraction": 0.237143,
+        "soil_pawc_index": 0.578563,
+        "soil_fertility_index": 0.549944
+      }
+    },
+    {
+      "fips_code": "17",
+      "state_abbrev": "IL",
+      "state_name": "Illinois",
+      "rufas_region": "Corn Belt",
+      "normalized_vector": {
+        "thi_index": 0.101134,
+        "temp_seasonality": 0.93,
+        "moisture_index": 0.581491,
+        "soil_clay_fraction": 0.412714,
+        "soil_pawc_index": 0.674568,
+        "soil_fertility_index": 0.516444
+      }
+    },
+    {
+      "fips_code": "18",
+      "state_abbrev": "IN",
+      "state_name": "Indiana",
+      "rufas_region": "Corn Belt",
+      "normalized_vector": {
+        "thi_index": 0.161407,
+        "temp_seasonality": 0.844839,
+        "moisture_index": 0.573762,
+        "soil_clay_fraction": 0.208571,
+        "soil_pawc_index": 0.388818,
+        "soil_fertility_index": 0.754722
+      }
+    },
+    {
+      "fips_code": "19",
+      "state_abbrev": "IA",
+      "state_name": "Iowa",
+      "rufas_region": "Corn Belt",
+      "normalized_vector": {
+        "thi_index": 0.049374,
+        "temp_seasonality": 0.981935,
+        "moisture_index": 0.588134,
+        "soil_clay_fraction": 0.340857,
+        "soil_pawc_index": 0.715503,
+        "soil_fertility_index": 0.452722
+      }
+    },
+    {
+      "fips_code": "20",
+      "state_abbrev": "KS",
+      "state_name": "Kansas",
+      "rufas_region": "Northern Plains",
+      "normalized_vector": {
+        "thi_index": 0.32014,
+        "temp_seasonality": 0.85129,
+        "moisture_index": 0.241511,
+        "soil_clay_fraction": 0.301,
+        "soil_pawc_index": 0.5833,
+        "soil_fertility_index": 0.516111
+      }
+    },
+    {
+      "fips_code": "21",
+      "state_abbrev": "KY",
+      "state_name": "Kentucky",
+      "rufas_region": "Appalachian",
+      "normalized_vector": {
+        "thi_index": 0.324453,
+        "temp_seasonality": 0.743548,
+        "moisture_index": 0.710471,
+        "soil_clay_fraction": 0.324286,
+        "soil_pawc_index": 0.676156,
+        "soil_fertility_index": 0.314556
+      }
+    },
+    {
+      "fips_code": "22",
+      "state_abbrev": "LA",
+      "state_name": "Louisiana",
+      "rufas_region": "Delta",
+      "normalized_vector": {
+        "thi_index": 0.581877,
+        "temp_seasonality": 0.547742,
+        "moisture_index": 0.591295,
+        "soil_clay_fraction": 0.265714,
+        "soil_pawc_index": 0.611691,
+        "soil_fertility_index": 0.300556
+      }
+    },
+    {
+      "fips_code": "23",
+      "state_abbrev": "ME",
+      "state_name": "Maine",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.00046,
+        "temp_seasonality": 0.912258,
+        "moisture_index": 0.846701,
+        "soil_clay_fraction": 0.133714,
+        "soil_pawc_index": 0.522456,
+        "soil_fertility_index": 0.647222
+      }
+    },
+    {
+      "fips_code": "24",
+      "state_abbrev": "MD",
+      "state_name": "Maryland",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.240656,
+        "temp_seasonality": 0.820645,
+        "moisture_index": 0.605595,
+        "soil_clay_fraction": 0.338286,
+        "soil_pawc_index": 0.63998,
+        "soil_fertility_index": 0.487833
+      }
+    },
+    {
+      "fips_code": "25",
+      "state_abbrev": "MA",
+      "state_name": "Massachusetts",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.081475,
+        "temp_seasonality": 0.85871,
+        "moisture_index": 0.767564,
+        "soil_clay_fraction": 0.094429,
+        "soil_pawc_index": 0.476418,
+        "soil_fertility_index": 0.568167
+      }
+    },
+    {
+      "fips_code": "26",
+      "state_abbrev": "MI",
+      "state_name": "Michigan",
+      "rufas_region": "Lake",
+      "normalized_vector": {
+        "thi_index": 0.101857,
+        "temp_seasonality": 0.855161,
+        "moisture_index": 0.534571,
+        "soil_clay_fraction": 0.267857,
+        "soil_pawc_index": 0.484226,
+        "soil_fertility_index": 0.729389
+      }
+    },
+    {
+      "fips_code": "27",
+      "state_abbrev": "MN",
+      "state_name": "Minnesota",
+      "rufas_region": "Lake",
+      "normalized_vector": {
+        "thi_index": 0.015837,
+        "temp_seasonality": 1.0,
+        "moisture_index": 0.450849,
+        "soil_clay_fraction": 0.065714,
+        "soil_pawc_index": 0.15114,
+        "soil_fertility_index": 0.4645
+      }
+    },
+    {
+      "fips_code": "28",
+      "state_abbrev": "MS",
+      "state_name": "Mississippi",
+      "rufas_region": "Delta",
+      "normalized_vector": {
+        "thi_index": 0.543102,
+        "temp_seasonality": 0.573226,
+        "moisture_index": 0.617354,
+        "soil_clay_fraction": 0.272571,
+        "soil_pawc_index": 0.609414,
+        "soil_fertility_index": 0.246444
+      }
+    },
+    {
+      "fips_code": "29",
+      "state_abbrev": "MO",
+      "state_name": "Missouri",
+      "rufas_region": "Corn Belt",
+      "normalized_vector": {
+        "thi_index": 0.287058,
+        "temp_seasonality": 0.807742,
+        "moisture_index": 0.633005,
+        "soil_clay_fraction": 0.227857,
+        "soil_pawc_index": 0.761864,
+        "soil_fertility_index": 0.332556
+      }
+    },
+    {
+      "fips_code": "30",
+      "state_abbrev": "MT",
+      "state_name": "Montana",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.0,
+        "temp_seasonality": 0.815806,
+        "moisture_index": 0.548296,
+        "soil_clay_fraction": 0.384714,
+        "soil_pawc_index": 0.627146,
+        "soil_fertility_index": 0.546778
+      }
+    },
+    {
+      "fips_code": "31",
+      "state_abbrev": "NE",
+      "state_name": "Nebraska",
+      "rufas_region": "Northern Plains",
+      "normalized_vector": {
+        "thi_index": 0.16513,
+        "temp_seasonality": 0.956774,
+        "moisture_index": 0.402503,
+        "soil_clay_fraction": 0.465857,
+        "soil_pawc_index": 0.685918,
+        "soil_fertility_index": 0.422722
+      }
+    },
+    {
+      "fips_code": "32",
+      "state_abbrev": "NV",
+      "state_name": "Nevada",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.312431,
+        "temp_seasonality": 0.804516,
+        "moisture_index": 0.050643,
+        "soil_clay_fraction": 0.326143,
+        "soil_pawc_index": 0.390458,
+        "soil_fertility_index": 0.554222
+      }
+    },
+    {
+      "fips_code": "33",
+      "state_abbrev": "NH",
+      "state_name": "New Hampshire",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.005287,
+        "temp_seasonality": 0.871613,
+        "moisture_index": 0.797363,
+        "soil_clay_fraction": 0.066143,
+        "soil_pawc_index": 0.382371,
+        "soil_fertility_index": 0.6125
+      }
+    },
+    {
+      "fips_code": "34",
+      "state_abbrev": "NJ",
+      "state_name": "New Jersey",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.280391,
+        "temp_seasonality": 0.792581,
+        "moisture_index": 0.61302,
+        "soil_clay_fraction": 0.222571,
+        "soil_pawc_index": 0.648166,
+        "soil_fertility_index": 0.603722
+      }
+    },
+    {
+      "fips_code": "35",
+      "state_abbrev": "NM",
+      "state_name": "New Mexico",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.438242,
+        "temp_seasonality": 0.716129,
+        "moisture_index": 0.095163,
+        "soil_clay_fraction": 0.287286,
+        "soil_pawc_index": 0.424069,
+        "soil_fertility_index": 0.536556
+      }
+    },
+    {
+      "fips_code": "36",
+      "state_abbrev": "NY",
+      "state_name": "New York",
+      "rufas_region": "New York",
+      "normalized_vector": {
+        "thi_index": 0.129764,
+        "temp_seasonality": 0.843226,
+        "moisture_index": 0.605346,
+        "soil_clay_fraction": 0.306286,
+        "soil_pawc_index": 0.613807,
+        "soil_fertility_index": 0.5835
+      }
+    },
+    {
+      "fips_code": "37",
+      "state_abbrev": "NC",
+      "state_name": "North Carolina",
+      "rufas_region": "Appalachian",
+      "normalized_vector": {
+        "thi_index": 0.361661,
+        "temp_seasonality": 0.722581,
+        "moisture_index": 0.571097,
+        "soil_clay_fraction": 0.294143,
+        "soil_pawc_index": 0.452381,
+        "soil_fertility_index": 0.308111
+      }
+    },
+    {
+      "fips_code": "38",
+      "state_abbrev": "ND",
+      "state_name": "North Dakota",
+      "rufas_region": "Northern Plains",
+      "normalized_vector": {
+        "thi_index": 0.010535,
+        "temp_seasonality": 1.0,
+        "moisture_index": 0.324757,
+        "soil_clay_fraction": 0.291429,
+        "soil_pawc_index": 0.462535,
+        "soil_fertility_index": 0.736889
+      }
+    },
+    {
+      "fips_code": "39",
+      "state_abbrev": "OH",
+      "state_name": "Ohio",
+      "rufas_region": "Corn Belt",
+      "normalized_vector": {
+        "thi_index": 0.163296,
+        "temp_seasonality": 0.817419,
+        "moisture_index": 0.575917,
+        "soil_clay_fraction": 0.333857,
+        "soil_pawc_index": 0.661771,
+        "soil_fertility_index": 0.47
+      }
+    },
+    {
+      "fips_code": "40",
+      "state_abbrev": "OK",
+      "state_name": "Oklahoma",
+      "rufas_region": "Southern Plains",
+      "normalized_vector": {
+        "thi_index": 0.425704,
+        "temp_seasonality": 0.797742,
+        "moisture_index": 0.333304,
+        "soil_clay_fraction": 0.326857,
+        "soil_pawc_index": 0.652914,
+        "soil_fertility_index": 0.416611
+      }
+    },
+    {
+      "fips_code": "41",
+      "state_abbrev": "OR",
+      "state_name": "Oregon",
+      "rufas_region": "West Coast",
+      "normalized_vector": {
+        "thi_index": 0.14027,
+        "temp_seasonality": 0.307097,
+        "moisture_index": 1.0,
+        "soil_clay_fraction": 0.333857,
+        "soil_pawc_index": 0.729824,
+        "soil_fertility_index": 0.655556
+      }
+    },
+    {
+      "fips_code": "42",
+      "state_abbrev": "PA",
+      "state_name": "Pennsylvania",
+      "rufas_region": "Pennsylvania",
+      "normalized_vector": {
+        "thi_index": 0.22585,
+        "temp_seasonality": 0.816774,
+        "moisture_index": 0.65713,
+        "soil_clay_fraction": 0.267429,
+        "soil_pawc_index": 0.620807,
+        "soil_fertility_index": 0.4625
+      }
+    },
+    {
+      "fips_code": "44",
+      "state_abbrev": "RI",
+      "state_name": "Rhode Island",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.199748,
+        "temp_seasonality": 0.696774,
+        "moisture_index": 0.687486,
+        "soil_clay_fraction": 0.037143,
+        "soil_pawc_index": 0.639765,
+        "soil_fertility_index": 0.591667
+      }
+    },
+    {
+      "fips_code": "45",
+      "state_abbrev": "SC",
+      "state_name": "South Carolina",
+      "rufas_region": "Southeast",
+      "normalized_vector": {
+        "thi_index": 0.443677,
+        "temp_seasonality": 0.688387,
+        "moisture_index": 0.492485,
+        "soil_clay_fraction": 0.269,
+        "soil_pawc_index": 0.41019,
+        "soil_fertility_index": 0.311111
+      }
+    },
+    {
+      "fips_code": "46",
+      "state_abbrev": "SD",
+      "state_name": "South Dakota",
+      "rufas_region": "Northern Plains",
+      "normalized_vector": {
+        "thi_index": 0.058542,
+        "temp_seasonality": 1.0,
+        "moisture_index": 0.383473,
+        "soil_clay_fraction": 0.314143,
+        "soil_pawc_index": 0.58614,
+        "soil_fertility_index": 0.593944
+      }
+    },
+    {
+      "fips_code": "47",
+      "state_abbrev": "TN",
+      "state_name": "Tennessee",
+      "rufas_region": "Appalachian",
+      "normalized_vector": {
+        "thi_index": 0.373588,
+        "temp_seasonality": 0.694516,
+        "moisture_index": 0.663431,
+        "soil_clay_fraction": 0.367714,
+        "soil_pawc_index": 0.573227,
+        "soil_fertility_index": 0.325056
+      }
+    },
+    {
+      "fips_code": "48",
+      "state_abbrev": "TX",
+      "state_name": "Texas",
+      "rufas_region": "Southern Plains",
+      "normalized_vector": {
+        "thi_index": 0.519175,
+        "temp_seasonality": 0.684839,
+        "moisture_index": 0.293329,
+        "soil_clay_fraction": 0.218571,
+        "soil_pawc_index": 0.34822,
+        "soil_fertility_index": 0.503722
+      }
+    },
+    {
+      "fips_code": "49",
+      "state_abbrev": "UT",
+      "state_name": "Utah",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.094815,
+        "temp_seasonality": 0.886452,
+        "moisture_index": 0.325102,
+        "soil_clay_fraction": 0.357143,
+        "soil_pawc_index": 0.654596,
+        "soil_fertility_index": 0.629222
+      }
+    },
+    {
+      "fips_code": "50",
+      "state_abbrev": "VT",
+      "state_name": "Vermont",
+      "rufas_region": "Northeast",
+      "normalized_vector": {
+        "thi_index": 0.015154,
+        "temp_seasonality": 0.955806,
+        "moisture_index": 0.71606,
+        "soil_clay_fraction": 0.247857,
+        "soil_pawc_index": 0.552467,
+        "soil_fertility_index": 0.587444
+      }
+    },
+    {
+      "fips_code": "51",
+      "state_abbrev": "VA",
+      "state_name": "Virginia",
+      "rufas_region": "Appalachian",
+      "normalized_vector": {
+        "thi_index": 0.223167,
+        "temp_seasonality": 0.776452,
+        "moisture_index": 0.587589,
+        "soil_clay_fraction": 0.291571,
+        "soil_pawc_index": 0.577401,
+        "soil_fertility_index": 0.448722
+      }
+    },
+    {
+      "fips_code": "53",
+      "state_abbrev": "WA",
+      "state_name": "Washington",
+      "rufas_region": "West Coast",
+      "normalized_vector": {
+        "thi_index": 0.119148,
+        "temp_seasonality": 0.700645,
+        "moisture_index": 0.307143,
+        "soil_clay_fraction": 0.153571,
+        "soil_pawc_index": 0.375774,
+        "soil_fertility_index": 0.515056
+      }
+    },
+    {
+      "fips_code": "54",
+      "state_abbrev": "WV",
+      "state_name": "West Virginia",
+      "rufas_region": "Appalachian",
+      "normalized_vector": {
+        "thi_index": 0.146578,
+        "temp_seasonality": 0.76,
+        "moisture_index": 0.676526,
+        "soil_clay_fraction": 0.343143,
+        "soil_pawc_index": 0.586596,
+        "soil_fertility_index": 0.603778
+      }
+    },
+    {
+      "fips_code": "55",
+      "state_abbrev": "WI",
+      "state_name": "Wisconsin",
+      "rufas_region": "Wisconsin",
+      "normalized_vector": {
+        "thi_index": 0.0,
+        "temp_seasonality": 0.977419,
+        "moisture_index": 0.601165,
+        "soil_clay_fraction": 0.181286,
+        "soil_pawc_index": 0.400313,
+        "soil_fertility_index": 0.491167
+      }
+    },
+    {
+      "fips_code": "56",
+      "state_abbrev": "WY",
+      "state_name": "Wyoming",
+      "rufas_region": "Mountain",
+      "normalized_vector": {
+        "thi_index": 0.203735,
+        "temp_seasonality": 0.835484,
+        "moisture_index": 0.199557,
+        "soil_clay_fraction": 0.348,
+        "soil_pawc_index": 0.511808,
+        "soil_fertility_index": 0.564667
+      }
+    }
+  ]
+}

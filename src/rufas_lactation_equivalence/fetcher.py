@@ -7,6 +7,7 @@ Pure stdlib Python 3.12+ implementation without external dependencies.
 from __future__ import annotations
 
 import concurrent.futures
+import contextlib
 import json
 import math
 from pathlib import Path
@@ -18,19 +19,25 @@ import urllib.error
 import urllib.request
 import zlib
 
+from rufas_lactation_equivalence.atomic_io import atomic_write_json
 from rufas_lactation_equivalence.models import RawEdaphoclimaticProfile
 
-# Force IPv4 resolution to prevent IPv6 routing stalls on Linux hosts
-_ORIG_GETADDRINFO = socket.getaddrinfo
 
+@contextlib.contextmanager
+def forced_ipv4():
+    """Context manager to force IPv4 resolution to prevent IPv6 routing stalls on Linux hosts."""
+    orig_getaddrinfo = socket.getaddrinfo
 
-def _ipv4_getaddrinfo(*args, **kwargs):
-    responses = _ORIG_GETADDRINFO(*args, **kwargs)
-    ipv4_responses = [r for r in responses if r[0] == socket.AF_INET]
-    return ipv4_responses if ipv4_responses else responses
+    def _ipv4_getaddrinfo(*args, **kwargs):
+        responses = orig_getaddrinfo(*args, **kwargs)
+        ipv4_responses = [r for r in responses if r[0] == socket.AF_INET]
+        return ipv4_responses if ipv4_responses else responses
 
-
-socket.getaddrinfo = _ipv4_getaddrinfo
+    socket.getaddrinfo = _ipv4_getaddrinfo
+    try:
+        yield
+    finally:
+        socket.getaddrinfo = orig_getaddrinfo
 
 
 def compute_thornthwaite_or_hargreaves_pet(monthly_t2m: list[float], lat: float) -> float:
@@ -137,7 +144,7 @@ def decode_soilgrids_tiff(tiff_bytes: bytes) -> float:
     if len(tiff_bytes) < 8:
         raise ValueError(f"TIFF header too short ({len(tiff_bytes)} bytes)")
 
-    endian_mark, magic, ifd_offset = struct.unpack("<2sHI", tiff_bytes[:8])
+    endian_mark = tiff_bytes[:2]
     if endian_mark == b"II":
         endian = "<"
     elif endian_mark == b"MM":
@@ -145,6 +152,7 @@ def decode_soilgrids_tiff(tiff_bytes: bytes) -> float:
     else:
         raise ValueError(f"Unknown TIFF endianness: {endian_mark}")
 
+    magic, ifd_offset = struct.unpack(f"{endian}HI", tiff_bytes[2:8])
     if magic != 42:
         raise ValueError(f"Invalid TIFF magic number: {magic}")
 
@@ -218,14 +226,18 @@ def _http_get(url: str, timeout: int = 15, max_retries: int = 3) -> bytes:
                 url,
                 headers={"User-Agent": "RuFaS-Research/1.0 (Lactation-Equivalence; Python-3.12)"},
             )
-            with urllib.request.urlopen(req, timeout=timeout) as response:
-                return response.read()
+            with forced_ipv4():
+                with urllib.request.urlopen(req, timeout=timeout) as response:
+                    return response.read()
         except Exception:
             if attempt == max_retries - 1:
                 # Fallback to system curl with forced IPv4
                 cmd = ["curl", "-4", "-sS", "--retry", "2", "--max-time", str(timeout), url]
-                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-                return res.stdout
+                try:
+                    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+                    return res.stdout
+                except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+                    raise RuntimeError(f"Failed to fetch {url} via curl fallback: {exc}") from exc
             time.sleep(1.0 * (attempt + 1))
     raise RuntimeError(f"Failed to fetch {url} after {max_retries} attempts")
 
@@ -426,12 +438,5 @@ def fetch_all_profiles(
     br_payload = {"metadata": metadata, "profiles": br_profiles}
 
     # Atomic write
-    tmp_us = output_us_file.with_suffix(".tmp")
-    with open(tmp_us, "w", encoding="utf-8") as f:
-        json.dump(us_payload, f, indent=2, ensure_ascii=False)
-    tmp_us.replace(output_us_file)
-
-    tmp_br = output_br_file.with_suffix(".tmp")
-    with open(tmp_br, "w", encoding="utf-8") as f:
-        json.dump(br_payload, f, indent=2, ensure_ascii=False)
-    tmp_br.replace(output_br_file)
+    atomic_write_json(output_us_file, us_payload)
+    atomic_write_json(output_br_file, br_payload)

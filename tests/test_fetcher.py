@@ -1,10 +1,15 @@
+import socket
 import struct
+import subprocess
+from unittest.mock import patch
 import zlib
 import pytest
 
 from rufas_lactation_equivalence.fetcher import (
+    _http_get,
     compute_thornthwaite_or_hargreaves_pet,
     decode_soilgrids_tiff,
+    forced_ipv4,
     parse_nasa_power_response,
     weighted_topsoil_average,
 )
@@ -154,3 +159,86 @@ def test_decode_soilgrids_tiff_all_nodata_raises() -> None:
     tiff_bytes = _build_synthetic_geotiff(width=4, height=4, values=values, predictor=2, tile_w=16, tile_h=16)
     with pytest.raises(ValueError, match="No valid > 0 soil pixels found"):
         decode_soilgrids_tiff(tiff_bytes)
+
+
+def test_decode_soilgrids_tiff_big_endian() -> None:
+    """Verify decode_soilgrids_tiff correctly decodes big-endian (MM) TIFFs."""
+    w, h = 2, 2
+    tile_w, tile_h = 2, 2
+    values = [100, 200, 300, 400]
+    packed = struct.pack(">4h", *values)
+    compressed = zlib.compress(packed)
+    ifd_offset = 8
+    tags = [
+        (256, 3, 1, w),
+        (257, 3, 1, h),
+        (258, 3, 1, 16),
+        (259, 3, 1, 8),
+        (317, 3, 1, 1),  # Predictor 1 (no differencing)
+        (322, 3, 1, tile_w),
+        (323, 3, 1, tile_h),
+        (324, 4, 1, 0),
+        (325, 4, 1, len(compressed)),
+    ]
+    header_ifd_size = 8 + 2 + len(tags) * 12 + 4
+    tags[7] = (324, 4, 1, header_ifd_size)
+
+    buf = bytearray()
+    buf.extend(struct.pack(">2sHI", b"MM", 42, ifd_offset))
+    buf.extend(struct.pack(">H", len(tags)))
+    for tag, tag_type, count, val_or_offset in tags:
+        buf.extend(struct.pack(">HHII", tag, tag_type, count, val_or_offset))
+    buf.extend(struct.pack(">I", 0))
+    buf.extend(compressed)
+
+    decoded = decode_soilgrids_tiff(bytes(buf))
+    assert pytest.approx(decoded) == 250.0
+
+
+def test_decode_soilgrids_tiff_header_errors() -> None:
+    """Verify TIFF header validation checks."""
+    with pytest.raises(ValueError, match="TIFF header too short"):
+        decode_soilgrids_tiff(b"short")
+
+    with pytest.raises(ValueError, match="Unknown TIFF endianness"):
+        decode_soilgrids_tiff(b"XX\x00\x2a\x00\x00\x00\x08")
+
+    with pytest.raises(ValueError, match="Invalid TIFF magic number"):
+        decode_soilgrids_tiff(b"II\x00\x99\x00\x00\x00\x08")
+
+
+def test_forced_ipv4_context_manager() -> None:
+    """Verify forced_ipv4 filters for AF_INET and restores original getaddrinfo afterwards."""
+    orig_gai = socket.getaddrinfo
+
+    dummy_responses = [
+        (socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("::1", 80, 0, 0)),
+        (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("127.0.0.1", 80)),
+    ]
+
+    with patch("socket.getaddrinfo", return_value=dummy_responses):
+        before = socket.getaddrinfo
+        with forced_ipv4():
+            assert socket.getaddrinfo != before
+            res = socket.getaddrinfo("localhost", 80)
+            assert len(res) == 1
+            assert res[0][0] == socket.AF_INET
+        assert socket.getaddrinfo == before
+
+    assert socket.getaddrinfo == orig_gai
+
+
+def test_http_get_curl_fallback_error() -> None:
+    """Verify _http_get raises RuntimeError cleanly when curl fallback fails."""
+    with patch("urllib.request.urlopen", side_effect=Exception("network error")):
+        with patch("subprocess.run", side_effect=FileNotFoundError("curl not found")):
+            with pytest.raises(RuntimeError, match="Failed to fetch .* via curl fallback"):
+                _http_get("http://example.com/test", timeout=1, max_retries=1)
+
+        with patch(
+            "subprocess.run",
+            side_effect=subprocess.CalledProcessError(1, ["curl"], stderr=b"connection timed out"),
+        ):
+            with pytest.raises(RuntimeError, match="Failed to fetch .* via curl fallback"):
+                _http_get("http://example.com/test", timeout=1, max_retries=1)
+
