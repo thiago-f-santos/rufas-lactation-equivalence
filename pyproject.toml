@@ -7,7 +7,7 @@ name = "rufas-lactation-equivalence"
 version = "1.0.0"
 description = "Scientific edaphoclimatic equivalence pipeline mapping Brazilian IBGE UFs to RuFaS US dairy lactation curve adjustments"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = []
 
 [tool.setuptools.packages.find]

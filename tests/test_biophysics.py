@@ -40,6 +40,9 @@ def test_min_max_normalize_clamping_and_scaling() -> None:
     with pytest.raises(ValueError, match="upper .* must be greater than lower"):
         min_max_normalize(5.0, 10.0, 5.0)
 
+    with pytest.raises(ValueError, match="upper .* must be greater than lower"):
+        min_max_normalize(5.0, 10.0, 4.0)
+
 
 def test_models_dataclass_methods() -> None:
     """Verify RawEdaphoclimaticProfile.from_dict and dictionary serialization."""
@@ -111,3 +114,94 @@ def test_normalize_profile_produces_strictly_bounded_vector() -> None:
     for val in vec.as_tuple():
         assert 0.0 <= val <= 1.0
     assert len(vec.as_tuple()) == 6
+
+
+def test_normalized_vector_bounds_validation() -> None:
+    """Verify NormalizedVector raises ValueError on out-of-bounds fields."""
+    # Valid vector
+    NormalizedVector(0.0, 0.5, 1.0, 0.2, 0.4, 0.8)
+
+    # Test each field < 0.0 or > 1.0
+    with pytest.raises(ValueError, match="thi_index"):
+        NormalizedVector(-0.01, 0.5, 1.0, 0.2, 0.4, 0.8)
+    with pytest.raises(ValueError, match="temp_seasonality"):
+        NormalizedVector(0.5, 1.05, 1.0, 0.2, 0.4, 0.8)
+    with pytest.raises(ValueError, match="moisture_index"):
+        NormalizedVector(0.5, 0.5, -0.1, 0.2, 0.4, 0.8)
+    with pytest.raises(ValueError, match="soil_clay_fraction"):
+        NormalizedVector(0.5, 0.5, 0.5, 1.5, 0.4, 0.8)
+    with pytest.raises(ValueError, match="soil_pawc_index"):
+        NormalizedVector(0.5, 0.5, 0.5, 0.5, -0.5, 0.8)
+    with pytest.raises(ValueError, match="soil_fertility_index"):
+        NormalizedVector(0.5, 0.5, 0.5, 0.5, 0.5, 1.001)
+
+
+def test_match_candidate_bounds_validation() -> None:
+    """Verify MatchCandidate raises ValueError when similarity is outside [0.0, 1.0]."""
+    with pytest.raises(ValueError, match="gower_similarity"):
+        MatchCandidate("12", "FL", "Florida", "Southeast", -0.1, 0.5)
+    with pytest.raises(ValueError, match="gower_similarity"):
+        MatchCandidate("12", "FL", "Florida", "Southeast", 1.01, 0.5)
+    with pytest.raises(ValueError, match="euclidean_similarity"):
+        MatchCandidate("12", "FL", "Florida", "Southeast", 0.5, -0.01)
+    with pytest.raises(ValueError, match="euclidean_similarity"):
+        MatchCandidate("12", "FL", "Florida", "Southeast", 0.5, 1.1)
+
+
+def test_raw_profile_validation() -> None:
+    """Verify RawEdaphoclimaticProfile raises ValueError on invalid physical parameters."""
+    valid_args = dict(
+        code="31",
+        abbrev="MG",
+        name="Minas Gerais",
+        country="BRA",
+        rufas_region=None,
+        temp_mean_c=21.2,
+        rh_mean_pct=70.0,
+        temp_seasonality_c=6.5,
+        precip_annual_mm=1450.0,
+        pet_annual_mm=1150.0,
+        soil_clay_pct=46.0,
+        soil_sand_pct=34.0,
+        soil_ph=5.2,
+        soil_soc_g_kg=19.0,
+    )
+
+    # Valid profile should succeed
+    RawEdaphoclimaticProfile(**valid_args)
+
+    # RH out of bounds
+    with pytest.raises(ValueError, match="rh_mean_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "rh_mean_pct": -1.0})
+    with pytest.raises(ValueError, match="rh_mean_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "rh_mean_pct": 100.1})
+
+    # Clay out of bounds
+    with pytest.raises(ValueError, match="soil_clay_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_clay_pct": -5.0})
+    with pytest.raises(ValueError, match="soil_clay_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_clay_pct": 101.0})
+
+    # Sand out of bounds
+    with pytest.raises(ValueError, match="soil_sand_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_sand_pct": -0.1})
+    with pytest.raises(ValueError, match="soil_sand_pct"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_sand_pct": 105.0})
+
+    # Precip negative
+    with pytest.raises(ValueError, match="precip_annual_mm"):
+        RawEdaphoclimaticProfile(**{**valid_args, "precip_annual_mm": -10.0})
+
+    # PET negative
+    with pytest.raises(ValueError, match="pet_annual_mm"):
+        RawEdaphoclimaticProfile(**{**valid_args, "pet_annual_mm": -5.0})
+
+    # pH <= 0
+    with pytest.raises(ValueError, match="soil_ph"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_ph": 0.0})
+    with pytest.raises(ValueError, match="soil_ph"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_ph": -1.0})
+
+    # SOC < 0
+    with pytest.raises(ValueError, match="soil_soc_g_kg"):
+        RawEdaphoclimaticProfile(**{**valid_args, "soil_soc_g_kg": -0.5})

@@ -21,6 +21,34 @@ class RawEdaphoclimaticProfile:
     soil_ph: float
     soil_soc_g_kg: float
 
+    def __post_init__(self) -> None:
+        if not (0.0 <= self.rh_mean_pct <= 100.0):
+            raise ValueError(
+                f"rh_mean_pct must be between 0.0 and 100.0, got {self.rh_mean_pct}"
+            )
+        if not (0.0 <= self.soil_clay_pct <= 100.0):
+            raise ValueError(
+                f"soil_clay_pct must be between 0.0 and 100.0, got {self.soil_clay_pct}"
+            )
+        if not (0.0 <= self.soil_sand_pct <= 100.0):
+            raise ValueError(
+                f"soil_sand_pct must be between 0.0 and 100.0, got {self.soil_sand_pct}"
+            )
+        if self.precip_annual_mm < 0.0:
+            raise ValueError(
+                f"precip_annual_mm must be non-negative, got {self.precip_annual_mm}"
+            )
+        if self.pet_annual_mm < 0.0:
+            raise ValueError(
+                f"pet_annual_mm must be non-negative, got {self.pet_annual_mm}"
+            )
+        if self.soil_ph <= 0.0:
+            raise ValueError(f"soil_ph must be positive, got {self.soil_ph}")
+        if self.soil_soc_g_kg < 0.0:
+            raise ValueError(
+                f"soil_soc_g_kg must be non-negative, got {self.soil_soc_g_kg}"
+            )
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RawEdaphoclimaticProfile":
         return cls(
@@ -51,6 +79,19 @@ class NormalizedVector:
     soil_clay_fraction: float
     soil_pawc_index: float
     soil_fertility_index: float
+
+    def __post_init__(self) -> None:
+        fields = (
+            ("thi_index", self.thi_index),
+            ("temp_seasonality", self.temp_seasonality),
+            ("moisture_index", self.moisture_index),
+            ("soil_clay_fraction", self.soil_clay_fraction),
+            ("soil_pawc_index", self.soil_pawc_index),
+            ("soil_fertility_index", self.soil_fertility_index),
+        )
+        for name, val in fields:
+            if not (0.0 <= val <= 1.0):
+                raise ValueError(f"{name} must be within [0.0, 1.0], got {val}")
 
     def as_tuple(self) -> tuple[float, float, float, float, float, float]:
         return (
@@ -83,6 +124,16 @@ class MatchCandidate:
     rufas_region: str
     gower_similarity: float
     euclidean_similarity: float
+
+    def __post_init__(self) -> None:
+        if not (0.0 <= self.gower_similarity <= 1.0):
+            raise ValueError(
+                f"gower_similarity must be within [0.0, 1.0], got {self.gower_similarity}"
+            )
+        if not (0.0 <= self.euclidean_similarity <= 1.0):
+            raise ValueError(
+                f"euclidean_similarity must be within [0.0, 1.0], got {self.euclidean_similarity}"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {

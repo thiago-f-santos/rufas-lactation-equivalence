@@ -69,6 +69,7 @@ def calculate_pawc(sand_pct: float, clay_pct: float, soc_g_kg: float) -> float:
     s = max(0.0, min(1.0, sand_pct / 100.0))
     c = max(0.0, min(1.0, clay_pct / 100.0))
     # Van Bemmelen factor 1.724 converts SOC (g/kg -> % -> fraction) to Organic Matter weight %
+    # Note: OM is represented as a fractional mass ratio [0.0, 0.15] per project specification.
     om = max(0.0, min(0.15, soc_g_kg * 0.001724))
 
     theta_1500t = (
