@@ -1,0 +1,132 @@
+{
+  "region_adjustments": {
+    "Appalachian": {
+      "l": -0.22,
+      "m": -0.042,
+      "n": -0.89
+    },
+    "Corn Belt": {
+      "l": 0.55,
+      "m": -0.58,
+      "n": -1.12
+    },
+    "Delta": {
+      "l": -2.56,
+      "m": 0.59,
+      "n": 1.47
+    },
+    "Lake": {
+      "l": 0.61,
+      "m": -0.4,
+      "n": -0.64
+    },
+    "Mountain": {
+      "l": -0.96,
+      "m": 3.13,
+      "n": 1.5
+    },
+    "Northeast": {
+      "l": 1.04,
+      "m": -1.99,
+      "n": -1.13
+    },
+    "Northern Plains": {
+      "l": -0.26,
+      "m": 0.19,
+      "n": -0.79
+    },
+    "New York": {
+      "l": 0.67,
+      "m": -1.21,
+      "n": -0.45
+    },
+    "Pennsylvania": {
+      "l": 1.15,
+      "m": -0.96,
+      "n": 0.06
+    },
+    "Southeast": {
+      "l": -2.0,
+      "m": 2.59,
+      "n": 2.6
+    },
+    "Southern Plains": {
+      "l": -0.51,
+      "m": -1.02,
+      "n": -0.93
+    },
+    "West Coast": {
+      "l": 1.09,
+      "m": 0.53,
+      "n": 0.52
+    },
+    "Wisconsin": {
+      "l": 1.4,
+      "m": -0.83,
+      "n": -0.2
+    },
+    "None": {
+      "l": 0.0,
+      "m": 0.0,
+      "n": 0.0
+    }
+  },
+  "state_to_region_mapping": {
+    "1": "Southeast",
+    "2": "None",
+    "3": "None",
+    "4": "Mountain",
+    "5": "Delta",
+    "6": "West Coast",
+    "7": "None",
+    "8": "Mountain",
+    "9": "Northeast",
+    "10": "Northeast",
+    "11": "None",
+    "12": "Southeast",
+    "13": "Southeast",
+    "14": "None",
+    "15": "None",
+    "16": "Mountain",
+    "17": "Corn Belt",
+    "18": "Corn Belt",
+    "19": "Corn Belt",
+    "20": "Northern Plains",
+    "21": "Appalachian",
+    "22": "Delta",
+    "23": "Northeast",
+    "24": "Northeast",
+    "25": "Northeast",
+    "26": "Lake",
+    "27": "Lake",
+    "28": "Delta",
+    "29": "Corn Belt",
+    "30": "Mountain",
+    "31": "Northern Plains",
+    "32": "Mountain",
+    "33": "Northeast",
+    "34": "Northeast",
+    "35": "Mountain",
+    "36": "New York",
+    "37": "Appalachian",
+    "38": "Northern Plains",
+    "39": "Corn Belt",
+    "40": "Southern Plains",
+    "41": "West Coast",
+    "42": "Pennsylvania",
+    "43": "None",
+    "44": "Northeast",
+    "45": "Southeast",
+    "46": "Northern Plains",
+    "47": "Appalachian",
+    "48": "Southern Plains",
+    "49": "Mountain",
+    "50": "Northeast",
+    "51": "Appalachian",
+    "52": "None",
+    "53": "West Coast",
+    "54": "Appalachian",
+    "55": "Wisconsin",
+    "56": "Mountain"
+  }
+}

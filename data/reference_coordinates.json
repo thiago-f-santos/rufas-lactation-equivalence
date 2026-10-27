@@ -1,0 +1,579 @@
+{
+  "us_states": [
+    {
+      "code": "1",
+      "abbrev": "AL",
+      "name": "Alabama",
+      "rufas_region": "Southeast",
+      "lat": 34.18,
+      "lon": -86.84
+    },
+    {
+      "code": "4",
+      "abbrev": "AZ",
+      "name": "Arizona",
+      "rufas_region": "Mountain",
+      "lat": 32.88,
+      "lon": -111.75
+    },
+    {
+      "code": "5",
+      "abbrev": "AR",
+      "name": "Arkansas",
+      "rufas_region": "Delta",
+      "lat": 36.03,
+      "lon": -94.22
+    },
+    {
+      "code": "6",
+      "abbrev": "CA",
+      "name": "California",
+      "rufas_region": "West Coast",
+      "lat": 36.21,
+      "lon": -119.34
+    },
+    {
+      "code": "8",
+      "abbrev": "CO",
+      "name": "Colorado",
+      "rufas_region": "Mountain",
+      "lat": 40.42,
+      "lon": -104.7
+    },
+    {
+      "code": "9",
+      "abbrev": "CT",
+      "name": "Connecticut",
+      "rufas_region": "Northeast",
+      "lat": 41.75,
+      "lon": -73.19
+    },
+    {
+      "code": "10",
+      "abbrev": "DE",
+      "name": "Delaware",
+      "rufas_region": "Northeast",
+      "lat": 39.15,
+      "lon": -75.52
+    },
+    {
+      "code": "12",
+      "abbrev": "FL",
+      "name": "Florida",
+      "rufas_region": "Southeast",
+      "lat": 27.24,
+      "lon": -80.83
+    },
+    {
+      "code": "13",
+      "abbrev": "GA",
+      "name": "Georgia",
+      "rufas_region": "Southeast",
+      "lat": 33.59,
+      "lon": -83.47
+    },
+    {
+      "code": "16",
+      "abbrev": "ID",
+      "name": "Idaho",
+      "rufas_region": "Mountain",
+      "lat": 42.72,
+      "lon": -114.52
+    },
+    {
+      "code": "17",
+      "abbrev": "IL",
+      "name": "Illinois",
+      "rufas_region": "Corn Belt",
+      "lat": 42.3,
+      "lon": -89.62
+    },
+    {
+      "code": "18",
+      "abbrev": "IN",
+      "name": "Indiana",
+      "rufas_region": "Corn Belt",
+      "lat": 41.68,
+      "lon": -85.97
+    },
+    {
+      "code": "19",
+      "abbrev": "IA",
+      "name": "Iowa",
+      "rufas_region": "Corn Belt",
+      "lat": 43.3,
+      "lon": -91.79
+    },
+    {
+      "code": "20",
+      "abbrev": "KS",
+      "name": "Kansas",
+      "rufas_region": "Northern Plains",
+      "lat": 37.97,
+      "lon": -100.87
+    },
+    {
+      "code": "21",
+      "abbrev": "KY",
+      "name": "Kentucky",
+      "rufas_region": "Appalachian",
+      "lat": 36.99,
+      "lon": -85.91
+    },
+    {
+      "code": "22",
+      "abbrev": "LA",
+      "name": "Louisiana",
+      "rufas_region": "Delta",
+      "lat": 30.68,
+      "lon": -90.5
+    },
+    {
+      "code": "23",
+      "abbrev": "ME",
+      "name": "Maine",
+      "rufas_region": "Northeast",
+      "lat": 44.31,
+      "lon": -69.78
+    },
+    {
+      "code": "24",
+      "abbrev": "MD",
+      "name": "Maryland",
+      "rufas_region": "Northeast",
+      "lat": 39.41,
+      "lon": -77.41
+    },
+    {
+      "code": "25",
+      "abbrev": "MA",
+      "name": "Massachusetts",
+      "rufas_region": "Northeast",
+      "lat": 42.59,
+      "lon": -72.6
+    },
+    {
+      "code": "26",
+      "abbrev": "MI",
+      "name": "Michigan",
+      "rufas_region": "Lake",
+      "lat": 42.99,
+      "lon": -84.6
+    },
+    {
+      "code": "27",
+      "abbrev": "MN",
+      "name": "Minnesota",
+      "rufas_region": "Lake",
+      "lat": 45.56,
+      "lon": -94.16
+    },
+    {
+      "code": "28",
+      "abbrev": "MS",
+      "name": "Mississippi",
+      "rufas_region": "Delta",
+      "lat": 31.15,
+      "lon": -90.13
+    },
+    {
+      "code": "29",
+      "abbrev": "MO",
+      "name": "Missouri",
+      "rufas_region": "Corn Belt",
+      "lat": 37.27,
+      "lon": -92.54
+    },
+    {
+      "code": "30",
+      "abbrev": "MT",
+      "name": "Montana",
+      "rufas_region": "Mountain",
+      "lat": 45.68,
+      "lon": -111.04
+    },
+    {
+      "code": "31",
+      "abbrev": "NE",
+      "name": "Nebraska",
+      "rufas_region": "Northern Plains",
+      "lat": 41.92,
+      "lon": -96.71
+    },
+    {
+      "code": "32",
+      "abbrev": "NV",
+      "name": "Nevada",
+      "rufas_region": "Mountain",
+      "lat": 39.47,
+      "lon": -118.78
+    },
+    {
+      "code": "33",
+      "abbrev": "NH",
+      "name": "New Hampshire",
+      "rufas_region": "Northeast",
+      "lat": 43.7,
+      "lon": -72.03
+    },
+    {
+      "code": "34",
+      "abbrev": "NJ",
+      "name": "New Jersey",
+      "rufas_region": "Northeast",
+      "lat": 39.57,
+      "lon": -75.47
+    },
+    {
+      "code": "35",
+      "abbrev": "NM",
+      "name": "New Mexico",
+      "rufas_region": "Mountain",
+      "lat": 33.39,
+      "lon": -104.52
+    },
+    {
+      "code": "36",
+      "abbrev": "NY",
+      "name": "New York",
+      "rufas_region": "New York",
+      "lat": 42.93,
+      "lon": -76.57
+    },
+    {
+      "code": "37",
+      "abbrev": "NC",
+      "name": "North Carolina",
+      "rufas_region": "Appalachian",
+      "lat": 35.78,
+      "lon": -80.89
+    },
+    {
+      "code": "38",
+      "abbrev": "ND",
+      "name": "North Dakota",
+      "rufas_region": "Northern Plains",
+      "lat": 46.88,
+      "lon": -98.71
+    },
+    {
+      "code": "39",
+      "abbrev": "OH",
+      "name": "Ohio",
+      "rufas_region": "Corn Belt",
+      "lat": 40.8,
+      "lon": -81.93
+    },
+    {
+      "code": "40",
+      "abbrev": "OK",
+      "name": "Oklahoma",
+      "rufas_region": "Southern Plains",
+      "lat": 35.05,
+      "lon": -97.94
+    },
+    {
+      "code": "41",
+      "abbrev": "OR",
+      "name": "Oregon",
+      "rufas_region": "West Coast",
+      "lat": 45.46,
+      "lon": -123.84
+    },
+    {
+      "code": "42",
+      "abbrev": "PA",
+      "name": "Pennsylvania",
+      "rufas_region": "Pennsylvania",
+      "lat": 40.04,
+      "lon": -76.31
+    },
+    {
+      "code": "44",
+      "abbrev": "RI",
+      "name": "Rhode Island",
+      "rufas_region": "Northeast",
+      "lat": 41.48,
+      "lon": -71.53
+    },
+    {
+      "code": "45",
+      "abbrev": "SC",
+      "name": "South Carolina",
+      "rufas_region": "Southeast",
+      "lat": 34.27,
+      "lon": -81.62
+    },
+    {
+      "code": "46",
+      "abbrev": "SD",
+      "name": "South Dakota",
+      "rufas_region": "Northern Plains",
+      "lat": 44.31,
+      "lon": -96.79
+    },
+    {
+      "code": "47",
+      "abbrev": "TN",
+      "name": "Tennessee",
+      "rufas_region": "Appalachian",
+      "lat": 35.73,
+      "lon": -84.33
+    },
+    {
+      "code": "48",
+      "abbrev": "TX",
+      "name": "Texas",
+      "rufas_region": "Southern Plains",
+      "lat": 32.22,
+      "lon": -98.2
+    },
+    {
+      "code": "49",
+      "abbrev": "UT",
+      "name": "Utah",
+      "rufas_region": "Mountain",
+      "lat": 41.73,
+      "lon": -111.83
+    },
+    {
+      "code": "50",
+      "abbrev": "VT",
+      "name": "Vermont",
+      "rufas_region": "Northeast",
+      "lat": 44.81,
+      "lon": -73.08
+    },
+    {
+      "code": "51",
+      "abbrev": "VA",
+      "name": "Virginia",
+      "rufas_region": "Appalachian",
+      "lat": 38.45,
+      "lon": -78.87
+    },
+    {
+      "code": "53",
+      "abbrev": "WA",
+      "name": "Washington",
+      "rufas_region": "West Coast",
+      "lat": 46.6,
+      "lon": -120.51
+    },
+    {
+      "code": "54",
+      "abbrev": "WV",
+      "name": "West Virginia",
+      "rufas_region": "Appalachian",
+      "lat": 39.47,
+      "lon": -79.68
+    },
+    {
+      "code": "55",
+      "abbrev": "WI",
+      "name": "Wisconsin",
+      "rufas_region": "Wisconsin",
+      "lat": 44.96,
+      "lon": -89.63
+    },
+    {
+      "code": "56",
+      "abbrev": "WY",
+      "name": "Wyoming",
+      "rufas_region": "Mountain",
+      "lat": 42.06,
+      "lon": -104.18
+    }
+  ],
+  "brazil_ufs": [
+    {
+      "code": "11",
+      "abbrev": "RO",
+      "name": "Rondônia",
+      "lat": -10.88,
+      "lon": -61.95
+    },
+    {
+      "code": "12",
+      "abbrev": "AC",
+      "name": "Acre",
+      "lat": -10.15,
+      "lon": -67.74
+    },
+    {
+      "code": "13",
+      "abbrev": "AM",
+      "name": "Amazonas",
+      "lat": -3.58,
+      "lon": -59.13
+    },
+    {
+      "code": "14",
+      "abbrev": "RR",
+      "name": "Roraima",
+      "lat": 2.43,
+      "lon": -60.91
+    },
+    {
+      "code": "15",
+      "abbrev": "PA",
+      "name": "Pará",
+      "lat": -2.99,
+      "lon": -47.35
+    },
+    {
+      "code": "16",
+      "abbrev": "AP",
+      "name": "Amapá",
+      "lat": 0.71,
+      "lon": -51.41
+    },
+    {
+      "code": "17",
+      "abbrev": "TO",
+      "name": "Tocantins",
+      "lat": -7.19,
+      "lon": -48.2
+    },
+    {
+      "code": "21",
+      "abbrev": "MA",
+      "name": "Maranhão",
+      "lat": -5.52,
+      "lon": -47.47
+    },
+    {
+      "code": "22",
+      "abbrev": "PI",
+      "name": "Piauí",
+      "lat": -5.19,
+      "lon": -42.75
+    },
+    {
+      "code": "23",
+      "abbrev": "CE",
+      "name": "Ceará",
+      "lat": -5.2,
+      "lon": -39.29
+    },
+    {
+      "code": "24",
+      "abbrev": "RN",
+      "name": "Rio Grande do Norte",
+      "lat": -5.19,
+      "lon": -37.34
+    },
+    {
+      "code": "25",
+      "abbrev": "PB",
+      "name": "Paraíba",
+      "lat": -7.22,
+      "lon": -35.88
+    },
+    {
+      "code": "26",
+      "abbrev": "PE",
+      "name": "Pernambuco",
+      "lat": -8.89,
+      "lon": -36.49
+    },
+    {
+      "code": "27",
+      "abbrev": "AL",
+      "name": "Alagoas",
+      "lat": -9.68,
+      "lon": -37.12
+    },
+    {
+      "code": "28",
+      "abbrev": "SE",
+      "name": "Sergipe",
+      "lat": -10.22,
+      "lon": -37.42
+    },
+    {
+      "code": "29",
+      "abbrev": "BA",
+      "name": "Bahia",
+      "lat": -14.86,
+      "lon": -40.84
+    },
+    {
+      "code": "31",
+      "abbrev": "MG",
+      "name": "Minas Gerais",
+      "lat": -18.58,
+      "lon": -46.51
+    },
+    {
+      "code": "32",
+      "abbrev": "ES",
+      "name": "Espírito Santo",
+      "lat": -20.6,
+      "lon": -41.2
+    },
+    {
+      "code": "33",
+      "abbrev": "RJ",
+      "name": "Rio de Janeiro",
+      "lat": -22.24,
+      "lon": -43.7
+    },
+    {
+      "code": "35",
+      "abbrev": "SP",
+      "name": "São Paulo",
+      "lat": -21.9,
+      "lon": -47.62
+    },
+    {
+      "code": "41",
+      "abbrev": "PR",
+      "name": "Paraná",
+      "lat": -24.79,
+      "lon": -50.01
+    },
+    {
+      "code": "42",
+      "abbrev": "SC",
+      "name": "Santa Catarina",
+      "lat": -27.23,
+      "lon": -52.02
+    },
+    {
+      "code": "43",
+      "abbrev": "RS",
+      "name": "Rio Grande do Sul",
+      "lat": -28.26,
+      "lon": -52.41
+    },
+    {
+      "code": "50",
+      "abbrev": "MS",
+      "name": "Mato Grosso do Sul",
+      "lat": -20.4,
+      "lon": -54.7
+    },
+    {
+      "code": "51",
+      "abbrev": "MT",
+      "name": "Mato Grosso",
+      "lat": -14.62,
+      "lon": -57.49
+    },
+    {
+      "code": "52",
+      "abbrev": "GO",
+      "name": "Goiás",
+      "lat": -17.73,
+      "lon": -49.1
+    },
+    {
+      "code": "53",
+      "abbrev": "DF",
+      "name": "Distrito Federal",
+      "lat": -15.78,
+      "lon": -47.76
+    }
+  ]
+}
