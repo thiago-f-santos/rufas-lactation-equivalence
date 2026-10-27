@@ -333,3 +333,14 @@ def generate_dashboard_payload(
         "summary": summary,
         "ufs": ufs,
     }
+
+
+def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
+    """
+    Renders the standalone interactive HTML5 dashboard document with modern CSS,
+    SVG vector geometries, chart containers, and audit table.
+    """
+    from rufas_lactation_equivalence.template import render_html_dashboard as _render_html
+
+    return _render_html(payload=payload)
+

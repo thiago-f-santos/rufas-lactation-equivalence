@@ -37,3 +37,20 @@ def test_generate_dashboard_payload():
     assert len(sp["wood_curve"]["yield_kg"]) == 305
     assert sp["wood_curve"]["peak_day"] > 0
     assert sp["wood_curve"]["peak_yield"] > 0
+
+
+def test_render_html_dashboard():
+    from rufas_lactation_equivalence.dashboard_builder import render_html_dashboard
+
+    html = render_html_dashboard()
+    assert "<!DOCTYPE html>" in html
+    assert '<svg id="brazil-map"' in html
+    assert '<canvas id="lactationChart"' in html
+    assert '<canvas id="radarChart"' in html
+    assert 'id="auditTable"' in html
+    assert "--color-delta: #10b981" in html
+    assert "--color-southeast: #3b82f6" in html
+    assert "--color-mountain: #f59e0b" in html
+    assert "--color-southern-plains: #ef4444" in html
+    assert "--color-appalachian: #8b5cf6" in html
+
