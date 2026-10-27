@@ -117,6 +117,7 @@ def run_pipeline(
     data_dir: Path,
     output_dir: Path,
     export_rufas_json: Path | None = None,
+    build_dashboard: Path | None = None,
 ) -> dict[str, Any]:
     """
     Executes the complete equivalence calculation and atomically writes output artifacts.
@@ -200,6 +201,16 @@ def run_pipeline(
         rufas_data["brazil_state_to_region_mapping"] = brazil_mapping
         atomic_write_json(rufas_path, rufas_data)
 
+    if build_dashboard is not None:
+        from rufas_lactation_equivalence.dashboard_builder import build_and_save_dashboard
+
+        build_and_save_dashboard(
+            destination_path=build_dashboard,
+            audit_report_path=output_dir / "equivalence_audit_report.json",
+            edaphoclimatic_path=data_dir / "brazil_ufs_edaphoclimatic.json",
+            geojson_path=data_dir / "brazil_ibge_ufs.geojson",
+        )
+
     return report_payload
 
 
@@ -226,11 +237,20 @@ def main() -> None:
         default=None,
         help="Optional path to RuFaS lactation_curve_adjustment_inputs.json to update atomically.",
     )
+    parser.add_argument(
+        "--build-dashboard",
+        type=Path,
+        nargs="?",
+        const=project_root / "docs" / "index.html",
+        default=None,
+        help="Export standalone interactive HTML dashboard.",
+    )
     args = parser.parse_args()
     run_pipeline(
         data_dir=args.data_dir,
         output_dir=args.output_dir,
         export_rufas_json=args.export_rufas_json,
+        build_dashboard=args.build_dashboard,
     )
 
 

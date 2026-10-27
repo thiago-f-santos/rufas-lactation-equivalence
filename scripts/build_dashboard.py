@@ -18,6 +18,7 @@ repo_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(repo_root / "src"))
 
 from rufas_lactation_equivalence.dashboard_builder import (  # noqa: E402
+    build_and_save_dashboard,
     generate_dashboard_payload,
 )
 
@@ -31,6 +32,12 @@ def main() -> int:
         type=Path,
         default=None,
         help="Path to write the preprocessed JSON dashboard payload.",
+    )
+    parser.add_argument(
+        "--output-html",
+        type=Path,
+        default=repo_root / "docs" / "index.html",
+        help="Path to write the standalone HTML dashboard (defaults to docs/index.html).",
     )
     parser.add_argument(
         "--quiet",
@@ -60,6 +67,10 @@ def main() -> int:
             json.dump(payload, f, indent=2, ensure_ascii=False)
         if not args.quiet:
             print(f"Payload saved to: {args.output_payload}")
+
+    dest_html = build_and_save_dashboard(destination_path=args.output_html)
+    if not args.quiet:
+        print(f"Dashboard HTML generated at: {dest_html}")
 
     return 0
 

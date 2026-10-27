@@ -217,5 +217,32 @@ def test_audit_table_structure_and_sync():
     assert 'tableRow.classList.add("active-row")' in html
 
 
+def test_cli_dashboard_export(tmp_path):
+    from rufas_lactation_equivalence.dashboard_builder import build_and_save_dashboard
+
+    dest = tmp_path / "index.html"
+    build_and_save_dashboard(dest)
+    assert dest.exists()
+    content = dest.read_text(encoding="utf-8")
+    assert len(content) > 50000  # Comprehensive HTML with SVG and JSON payload
+    assert "São Paulo" in content
+    assert "Rio Grande do Sul" in content
+    assert "Amazonas" in content
+
+
+def test_cli_build_dashboard_flag(tmp_path, monkeypatch):
+    from rufas_lactation_equivalence.cli import main
+
+    out_file = tmp_path / "custom_docs" / "index.html"
+    test_args = ["rufas-lactation-equivalence", "--build-dashboard", str(out_file)]
+    monkeypatch.setattr("sys.argv", test_args)
+    main()
+
+    assert out_file.exists()
+    content = out_file.read_text(encoding="utf-8")
+    assert len(content) > 50000
+    assert "São Paulo" in content
+
+
 
 

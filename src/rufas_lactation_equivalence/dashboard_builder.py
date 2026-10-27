@@ -366,3 +366,48 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
 
     return _render_html(payload=payload)
 
+
+def build_and_save_dashboard(
+    destination_path: Path | str | None = None,
+    audit_report_path: Path | str | None = None,
+    edaphoclimatic_path: Path | str | None = None,
+    geojson_path: Path | str | None = None,
+) -> Path:
+    """
+    Builds the complete dashboard payload and renders the standalone interactive
+    HTML dashboard, atomically writing it to destination_path.
+
+    Parameters
+    ----------
+    destination_path : Path | str | None
+        Target path for the exported HTML file. Defaults to 'docs/index.html'
+        relative to the repository root.
+    audit_report_path : Path | str | None
+        Optional path to equivalence audit report JSON.
+    edaphoclimatic_path : Path | str | None
+        Optional path to Brazil UFs edaphoclimatic JSON dataset.
+    geojson_path : Path | str | None
+        Optional path to Brazil IBGE UFs GeoJSON dataset.
+
+    Returns
+    -------
+    Path
+        The resolved Path of the written HTML document.
+    """
+    from rufas_lactation_equivalence.atomic_io import atomic_write_text
+
+    if destination_path is None:
+        repo_root = Path(__file__).resolve().parent.parent.parent
+        dest = repo_root / "docs" / "index.html"
+    else:
+        dest = Path(destination_path)
+
+    payload = generate_dashboard_payload(
+        audit_report_path=audit_report_path,
+        edaphoclimatic_path=edaphoclimatic_path,
+        geojson_path=geojson_path,
+    )
+    html_content = render_html_dashboard(payload=payload)
+    atomic_write_text(dest, html_content)
+    return dest
+
