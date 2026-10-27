@@ -288,7 +288,18 @@ def generate_dashboard_payload(
             height=svg_height,
         )
 
-        raw_prof = raw_lookup.get(code, {})
+        raw_prof = dict(raw_lookup.get(code, {}))
+        if "soil_sand_pct" in raw_prof and "soil_clay_pct" in raw_prof and "soil_soc_g_kg" in raw_prof:
+            from rufas_lactation_equivalence.biophysics import calculate_pawc
+
+            raw_prof["pawc"] = round(
+                calculate_pawc(
+                    float(raw_prof["soil_sand_pct"]),
+                    float(raw_prof["soil_clay_pct"]),
+                    float(raw_prof["soil_soc_g_kg"]),
+                ),
+                4,
+            )
 
         ufs[uf] = {
             "uf": uf,

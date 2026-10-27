@@ -121,3 +121,39 @@ def test_svg_map_elements_and_interactivity():
     assert 'classList.remove("faded")' in html
 
 
+def test_chart_logic_and_wood_parameters():
+    from rufas_lactation_equivalence.dashboard_builder import render_html_dashboard
+
+    html = render_html_dashboard()
+    # Script and core function bindings
+    assert "https://cdn.jsdelivr.net/npm/chart.js" in html
+    assert "updateLactationChart" in html
+    assert "updateRadarChart" in html
+    assert "renderSvgFallbackLactation" in html
+
+    # Lactation curve KPIs
+    assert "peak-day-val" in html
+    assert "peak-yield-val" in html
+    assert "total-305-val" in html
+    assert "wood-deltas-val" in html
+
+    # Radar chart 6 edaphoclimatic axes
+    assert "THI" in html
+    assert "Sazonalidade Térmica" in html
+    assert "Índice Hídrico" in html
+    assert "Argila Solo" in html
+    assert "PAWC" in html
+    assert "Fertilidade Química" in html
+
+    # Neutral baseline and SVG fallback
+    assert "neutral_wood_curve" in html
+    assert "polyline" in html
+
+    # Biophysical metric grid
+    assert "bio-pawc-val" in html
+    assert "bio-temp-val" in html
+    assert "bio-rh-val" in html
+    assert "bio-clay-val" in html
+
+
+

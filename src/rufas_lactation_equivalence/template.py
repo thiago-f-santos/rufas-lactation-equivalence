@@ -1096,6 +1096,10 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
                   <div class="bio-metric-val" id="bio-clay-val">{default_raw.get('soil_clay_pct', 32.5):.1f} %</div>
                 </div>
                 <div class="bio-metric-cell">
+                  <div class="bio-metric-label">PAWC (Água Solo)</div>
+                  <div class="bio-metric-val" id="bio-pawc-val">{default_raw.get('pawc', 0.12):.3f} cm³/cm³</div>
+                </div>
+                <div class="bio-metric-cell">
                   <div class="bio-metric-label">pH em Água</div>
                   <div class="bio-metric-val" id="bio-ph-val">{default_raw.get('soil_ph', 5.4):.2f}</div>
                 </div>
@@ -1298,6 +1302,12 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       setVal("bio-precip-val", raw.precip_annual_mm ? Math.round(raw.precip_annual_mm) : null, " mm");
       setVal("bio-rh-val", raw.rh_mean_pct?.toFixed(1), " %");
       setVal("bio-clay-val", raw.soil_clay_pct?.toFixed(1), " %");
+      const pawcNum = raw.pawc !== undefined && raw.pawc !== null
+        ? raw.pawc.toFixed(3)
+        : (ufData.normalized_vector && ufData.normalized_vector.soil_pawc_index !== undefined
+            ? (ufData.normalized_vector.soil_pawc_index * 0.18 + 0.04).toFixed(3)
+            : null);
+      setVal("bio-pawc-val", pawcNum, " cm³/cm³");
       setVal("bio-ph-val", raw.soil_ph?.toFixed(2));
       setVal("bio-soc-val", raw.soil_soc_g_kg?.toFixed(1), " g/kg");
     }}
@@ -1385,28 +1395,359 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
     }}
 
     function updateLactationChart(ufData) {{
-      // Will be enhanced in Task 4
       if (!ufData) return;
       const canvas = document.getElementById("lactationChart");
+      const fallback = document.getElementById("lactation-svg-fallback");
       if (!canvas) return;
 
+      const wcurve = ufData.wood_curve || {{}};
+      const wadj = ufData.wood_adjustments || {{}};
+
+      // Update Quick Lactation KPI Strip
+      const peakDayElem = document.getElementById("peak-day-val");
+      if (peakDayElem && wcurve.peak_day !== undefined) {{
+        peakDayElem.textContent = wcurve.peak_day.toFixed(1);
+      }}
+
+      const peakYieldElem = document.getElementById("peak-yield-val");
+      if (peakYieldElem && wcurve.peak_yield !== undefined) {{
+        peakYieldElem.textContent = wcurve.peak_yield.toFixed(1);
+      }}
+
+      const total305Elem = document.getElementById("total-305-val");
+      if (total305Elem && wcurve.total_305d !== undefined) {{
+        total305Elem.textContent = Math.round(wcurve.total_305d).toLocaleString('pt-BR');
+      }}
+
+      const woodDeltasElem = document.getElementById("wood-deltas-val");
+      if (woodDeltasElem) {{
+        const dl = (wadj.l || 0).toFixed(1);
+        const dm = (wadj.m || 0).toFixed(1);
+        const dn = (wadj.n || 0).toFixed(1);
+        woodDeltasElem.textContent = `${{dl > 0 ? '+' : ''}}${{dl}}, ${{dm > 0 ? '+' : ''}}${{dm}}, ${{dn > 0 ? '+' : ''}}${{dn}}`;
+      }}
+
+      // Graceful fallback if Chart.js CDN is unavailable
       if (typeof Chart === "undefined") {{
-        renderSvgFallbackLactation(canvas.parentElement, ufData);
+        canvas.style.display = "none";
+        if (fallback) {{
+          fallback.style.display = "block";
+          renderSvgFallbackLactation(fallback, ufData);
+        }}
         return;
+      }}
+
+      canvas.style.display = "block";
+      if (fallback) fallback.style.display = "none";
+
+      const neutralYields = (dashboardPayload && dashboardPayload.summary && dashboardPayload.summary.neutral_wood_curve && dashboardPayload.summary.neutral_wood_curve.yield_kg)
+        ? dashboardPayload.summary.neutral_wood_curve.yield_kg
+        : Array.from({{ length: 305 }}, (_, i) => {{
+            const t = i + 1;
+            return +(19.90 * Math.pow(t, 0.247) * Math.exp(-0.003376 * t)).toFixed(4);
+          }});
+
+      const ufYields = wcurve.yield_kg || [];
+      const dimLabels = wcurve.dim || Array.from({{ length: 305 }}, (_, i) => i + 1);
+      const ufColor = ufData.region_color || "#2563eb";
+      const peakDayNum = Math.round(wcurve.peak_day || 73);
+
+      const datasets = [
+        {{
+          label: `${{ufData.name}} (${{ufData.uf}}) — Curva Ajustada`,
+          data: ufYields,
+          borderColor: ufColor,
+          backgroundColor: ufColor + "18",
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: (ctx) => (ctx.dataIndex === peakDayNum - 1 ? 6 : 0),
+          pointHoverRadius: 7,
+          pointBackgroundColor: (ctx) => (ctx.dataIndex === peakDayNum - 1 ? "#ef4444" : ufColor),
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+        }},
+        {{
+          label: "Linha de Base RuFaS (l=19.9, m=0.247, n=0.003376)",
+          data: neutralYields,
+          borderColor: "#94a3b8",
+          borderWidth: 1.75,
+          borderDash: [5, 5],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+        }}
+      ];
+
+      if (lactationChartInstance) {{
+        lactationChartInstance.data.labels = dimLabels;
+        lactationChartInstance.data.datasets = datasets;
+        lactationChartInstance.update();
+      }} else {{
+        const ctx = canvas.getContext("2d");
+        lactationChartInstance = new Chart(ctx, {{
+          type: "line",
+          data: {{
+            labels: dimLabels,
+            datasets: datasets,
+          }},
+          options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {{ duration: 350 }},
+            interaction: {{
+              mode: "index",
+              intersect: false,
+            }},
+            plugins: {{
+              legend: {{
+                position: "top",
+                labels: {{
+                  boxWidth: 14,
+                  font: {{ size: 11, family: "var(--font-sans)" }},
+                  color: "#334155",
+                }},
+              }},
+              tooltip: {{
+                callbacks: {{
+                  title: (items) => `DIM ${{items[0].label}}`,
+                  label: (item) => `${{item.dataset.label}}: ${{item.parsed.y.toFixed(2)}} kg/dia`,
+                }},
+              }},
+            }},
+            scales: {{
+              x: {{
+                title: {{
+                  display: true,
+                  text: "Dias em Lactação (DIM)",
+                  font: {{ size: 11, weight: "bold" }},
+                  color: "#64748b",
+                }},
+                grid: {{ color: "rgba(226, 232, 240, 0.6)" }},
+                ticks: {{ maxTicksLimit: 12, color: "#64748b" }},
+              }},
+              y: {{
+                title: {{
+                  display: true,
+                  text: "Produção (kg/vaca/dia)",
+                  font: {{ size: 11, weight: "bold" }},
+                  color: "#64748b",
+                }},
+                grid: {{ color: "rgba(226, 232, 240, 0.6)" }},
+                suggestedMin: 12,
+                suggestedMax: 34,
+                ticks: {{ color: "#64748b" }},
+              }},
+            }},
+          }},
+        }});
       }}
     }}
 
     function updateRadarChart(ufData) {{
-      // Will be enhanced in Task 4
       if (!ufData) return;
       const canvas = document.getElementById("radarChart");
       if (!canvas || typeof Chart === "undefined") return;
+
+      const ufColor = ufData.region_color || "#3b82f6";
+      const bmatch = ufData.best_match || {{}};
+      const ufVec = ufData.normalized_vector || {{}};
+      const usVec = bmatch.normalized_vector || {{}};
+
+      const labels = [
+        "THI",
+        "Sazonalidade Térmica",
+        "Índice Hídrico",
+        "Argila Solo",
+        "PAWC",
+        "Fertilidade Química"
+      ];
+
+      const ufScores = [
+        ufVec.thi_index ?? 0.5,
+        ufVec.temp_seasonality ?? 0.5,
+        ufVec.moisture_index ?? 0.5,
+        ufVec.soil_clay_fraction ?? 0.5,
+        ufVec.soil_pawc_index ?? 0.5,
+        ufVec.soil_fertility_index ?? 0.5,
+      ];
+
+      const usScores = [
+        usVec.thi_index ?? 0.5,
+        usVec.temp_seasonality ?? 0.5,
+        usVec.moisture_index ?? 0.5,
+        usVec.soil_clay_fraction ?? 0.5,
+        usVec.soil_pawc_index ?? 0.5,
+        usVec.soil_fertility_index ?? 0.5,
+      ];
+
+      const hexToRgba = (hex, alpha) => {{
+        const clean = (hex || "#3b82f6").replace("#", "");
+        const r = parseInt(clean.substring(0, 2), 16) || 59;
+        const g = parseInt(clean.substring(2, 4), 16) || 130;
+        const b = parseInt(clean.substring(4, 6), 16) || 246;
+        return `rgba(${{r}}, ${{g}}, ${{b}}, ${{alpha}})`;
+      }};
+
+      const datasets = [
+        {{
+          label: `${{ufData.name}} (${{ufData.uf}})`,
+          data: ufScores,
+          backgroundColor: hexToRgba(ufColor, 0.25),
+          borderColor: ufColor,
+          pointBackgroundColor: ufColor,
+          pointBorderColor: "#ffffff",
+          pointHoverBackgroundColor: "#ffffff",
+          pointHoverBorderColor: ufColor,
+          pointRadius: 4,
+          borderWidth: 2,
+        }},
+        {{
+          label: `Homólogo: ${{bmatch.us_state || ''}} (${{bmatch.us_abbrev || ''}})`,
+          data: usScores,
+          backgroundColor: "rgba(100, 116, 139, 0.15)",
+          borderColor: "#64748b",
+          borderDash: [5, 5],
+          pointBackgroundColor: "#64748b",
+          pointBorderColor: "#ffffff",
+          pointHoverBackgroundColor: "#ffffff",
+          pointHoverBorderColor: "#64748b",
+          pointRadius: 3,
+          borderWidth: 2,
+        }}
+      ];
+
+      if (radarChartInstance) {{
+        radarChartInstance.data.labels = labels;
+        radarChartInstance.data.datasets = datasets;
+        radarChartInstance.update();
+      }} else {{
+        const ctx = canvas.getContext("2d");
+        radarChartInstance = new Chart(ctx, {{
+          type: "radar",
+          data: {{
+            labels: labels,
+            datasets: datasets,
+          }},
+          options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {{ duration: 350 }},
+            scales: {{
+              r: {{
+                min: 0.0,
+                max: 1.0,
+                ticks: {{
+                  stepSize: 0.2,
+                  display: true,
+                  backdropColor: "transparent",
+                  color: "#94a3b8",
+                  font: {{ size: 9 }},
+                }},
+                pointLabels: {{
+                  font: {{ size: 10, weight: "bold", family: "var(--font-sans)" }},
+                  color: "#334155",
+                }},
+                grid: {{
+                  color: "rgba(203, 213, 225, 0.6)",
+                }},
+                angleLines: {{
+                  color: "rgba(203, 213, 225, 0.6)",
+                }},
+              }},
+            }},
+            plugins: {{
+              legend: {{
+                position: "top",
+                labels: {{
+                  boxWidth: 12,
+                  font: {{ size: 11, family: "var(--font-sans)" }},
+                  color: "#334155",
+                }},
+              }},
+              tooltip: {{
+                callbacks: {{
+                  label: (item) => `${{item.dataset.label}}: ${{(item.raw * 100).toFixed(1)}}% (${{item.raw.toFixed(3)}})`,
+                }},
+              }},
+            }},
+          }},
+        }});
+      }}
     }}
 
     function renderSvgFallbackLactation(container, ufData) {{
-      // Fallback SVG implementation
-      const fallback = document.getElementById("lactation-svg-fallback");
-      if (fallback) fallback.style.display = "block";
+      const target = container || document.getElementById("lactation-svg-fallback");
+      if (!target || !ufData) return;
+      target.style.display = "block";
+
+      const wcurve = ufData.wood_curve || {{}};
+      const yields = wcurve.yield_kg || [];
+      const neutralYields = (dashboardPayload && dashboardPayload.summary && dashboardPayload.summary.neutral_wood_curve)
+        ? dashboardPayload.summary.neutral_wood_curve.yield_kg
+        : [];
+      if (!yields.length) return;
+
+      const w = 560;
+      const h = 250;
+      const padLeft = 45;
+      const padRight = 20;
+      const padTop = 30;
+      const padBottom = 35;
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+
+      const minY = 10;
+      const maxY = 35;
+
+      const getX = (dim) => padLeft + ((dim - 1) / 304) * plotW;
+      const getY = (yVal) => padTop + plotH - ((yVal - minY) / (maxY - minY)) * plotH;
+
+      const ptsUf = yields.map((val, idx) => `${{getX(idx + 1).toFixed(1)}},${{getY(val).toFixed(1)}}`).join(" ");
+      const ptsBase = neutralYields.length
+        ? neutralYields.map((val, idx) => `${{getX(idx + 1).toFixed(1)}},${{getY(val).toFixed(1)}}`).join(" ")
+        : "";
+
+      const peakDay = wcurve.peak_day || 73;
+      const peakYield = wcurve.peak_yield || 28;
+      const peakX = getX(peakDay).toFixed(1);
+      const peakY = getY(peakYield).toFixed(1);
+      const ufColor = ufData.region_color || "#2563eb";
+
+      let gridLines = "";
+      [50, 100, 150, 200, 250, 300].forEach(d => {{
+        const gx = getX(d).toFixed(1);
+        gridLines += `<line x1="${{gx}}" y1="${{padTop}}" x2="${{gx}}" y2="${{padTop + plotH}}" stroke="#e2e8f0" stroke-width="1"/>`;
+        gridLines += `<text x="${{gx}}" y="${{padTop + plotH + 16}}" font-size="10" fill="#94a3b8" text-anchor="middle">${{d}}</text>`;
+      }});
+
+      [15, 20, 25, 30].forEach(yv => {{
+        const gy = getY(yv).toFixed(1);
+        gridLines += `<line x1="${{padLeft}}" y1="${{gy}}" x2="${{padLeft + plotW}}" y2="${{gy}}" stroke="#e2e8f0" stroke-width="1"/>`;
+        gridLines += `<text x="${{padLeft - 6}}" y="${{parseFloat(gy) + 3}}" font-size="10" fill="#94a3b8" text-anchor="end">${{yv}}</text>`;
+      }});
+
+      target.innerHTML = `
+        <svg viewBox="0 0 ${{w}} ${{h}}" style="width: 100%; height: 100%; display: block;" role="img" aria-label="Curva de lactação de Wood">
+          <rect x="${{padLeft}}" y="${{padTop}}" width="${{plotW}}" height="${{plotH}}" fill="#ffffff" rx="4"/>
+          ${{gridLines}}
+          ${{ptsBase ? `<polyline points="${{ptsBase}}" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4,4"/>` : ''}}
+          <polyline points="${{ptsUf}}" fill="none" stroke="${{ufColor}}" stroke-width="2.5"/>
+          <circle cx="${{peakX}}" cy="${{peakY}}" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+          <text x="${{peakX}}" y="${{peakY - 8}}" text-anchor="middle" font-size="10" font-weight="bold" fill="#ef4444">
+            Pico: ${{peakYield.toFixed(1)}} kg/d (${{peakDay.toFixed(0)}} DIM)
+          </text>
+          <line x1="${{padLeft}}" y1="${{padTop + plotH}}" x2="${{padLeft + plotW}}" y2="${{padTop + plotH}}" stroke="#cbd5e1" stroke-width="1.5"/>
+          <line x1="${{padLeft}}" y1="${{padTop}}" x2="${{padLeft}}" y2="${{padTop + plotH}}" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="${{padLeft + plotW / 2}}" y="${{h - 4}}" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b">
+            Dias em Lactação (DIM)
+          </text>
+          <text x="12" y="${{padTop + plotH / 2}}" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b" transform="rotate(-90 12 ${{padTop + plotH / 2}})">
+            kg/dia
+          </text>
+        </svg>
+      `;
     }}
 
     function filterTable(query) {{
