@@ -305,7 +305,8 @@ body {
   transition: fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 
-.uf-path:hover {
+.uf-path:hover,
+.uf-path.hovered {
   stroke: #0f172a;
   stroke-width: 2.2px;
   filter: brightness(1.15);
@@ -1308,6 +1309,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
       map.querySelectorAll(".uf-path").forEach(path => {{
         path.addEventListener("mouseenter", (e) => {{
           const uf = path.getAttribute("data-uf");
+          path.classList.add("hovered");
           showTooltip(e, uf);
         }});
         path.addEventListener("mousemove", (e) => {{
@@ -1315,6 +1317,7 @@ def render_html_dashboard(payload: dict[str, Any] | None = None) -> str:
           showTooltip(e, uf);
         }});
         path.addEventListener("mouseleave", () => {{
+          path.classList.remove("hovered");
           hideTooltip();
         }});
         path.addEventListener("click", () => {{
