@@ -121,6 +121,8 @@ def run_pipeline(
     """
     Executes the complete equivalence calculation and atomically writes output artifacts.
     """
+    data_dir = Path(data_dir)
+    output_dir = Path(output_dir)
     regions_raw = json.loads((data_dir / "rufas_region_adjustments.json").read_text(encoding="utf-8"))
     us_raw = json.loads((data_dir / "us_states_edaphoclimatic.json").read_text(encoding="utf-8"))
     br_raw = json.loads((data_dir / "brazil_ufs_edaphoclimatic.json").read_text(encoding="utf-8"))
